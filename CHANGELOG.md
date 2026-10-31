@@ -4,6 +4,21 @@ All notable changes to the **Nesty** - Little Things, Taken Care Of project will
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2026-10-31
+
+### Fixed
+- **Multi-Device Account & Profile Synchronization**:
+  - Unified `ProfileController` with `SyncService` so that user nicknames and custom avatar photos are stored directly in cloud backups and synced across all devices.
+  - Resolved Firestore document overwrite issue in `SyncService._push()` by applying `SetOptions(merge: true)`, preserving account fields (`username`, `email`, `nickname`, `photo`).
+  - Updated `firestore.rules` to recursively match subcollection document operations (`match /users/{uid}/{document=**}`).
+  - Upgraded Auth state listener to `FirebaseAuth.instance.userChanges()` to capture immediate profile and display name updates.
+
+### Added
+- **Username Customization in Profile**:
+  - Added in-app username update dialog in `ProfilePage` (`@username`), enabling users to change their username with real-time uniqueness validation and Firestore mapping updates.
+
+---
+
 ## [0.7.0] - 2026-10-31
 
 ### Added

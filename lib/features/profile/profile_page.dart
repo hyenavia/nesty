@@ -65,6 +65,72 @@ class _ProfilePageState extends State<ProfilePage> {
     if (mounted) _toast(s.t('profile_saved'));
   }
 
+  Future<void> _changeUsernameDialog(BuildContext context) async {
+    final s = context.s;
+    final auth = context.read<AuthController>();
+    final ctrl = TextEditingController(text: auth.username ?? '');
+    String? errorText;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(s.t('change_username')),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: ctrl,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: s.t('username'),
+                  prefixText: '@',
+                  helperText: s.t('username_hint'),
+                  errorText: errorText,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(s.t('cancel')),
+            ),
+            FilledButton(
+              onPressed: () async {
+                final val = ctrl.text.trim();
+                if (!AuthController.isValidUsername(val)) {
+                  setDialogState(() {
+                    errorText = s.t('username_hint');
+                  });
+                  return;
+                }
+                try {
+                  await auth.updateUsername(val);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  if (mounted) _toast(s.t('username_saved'));
+                } on AuthFailure catch (e) {
+                  setDialogState(() {
+                    errorText = e.code == 'username-taken'
+                        ? s.t('username_taken')
+                        : s.t('err_unknown');
+                  });
+                } catch (e) {
+                  setDialogState(() {
+                    errorText = '$e';
+                  });
+                }
+              },
+              child: Text(s.t('save')),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = context.s;
@@ -149,6 +215,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       leading: const Icon(Icons.alternate_email_rounded),
                       title: Text('@${auth.username}'),
                       subtitle: Text(s.t('username')),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.edit_outlined, size: 20),
+                        tooltip: s.t('change_username'),
+                        onPressed: () => _changeUsernameDialog(context),
+                      ),
+                      onTap: () => _changeUsernameDialog(context),
                     ),
                   if (auth.email != null)
                     ListTile(

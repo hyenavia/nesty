@@ -16,13 +16,14 @@ class AuthFailure implements Exception {
 typedef AuthException = AuthFailure;
 
 /// Firebase Auth controller with dual Username & Email login support,
-/// password reset, account deletion, and offline guest mode.
+/// password reset, account deletion, username customization, and offline guest mode.
 class AuthController extends ChangeNotifier {
   AuthController(this._prefs, {required this.firebaseReady}) {
     _guest = _prefs.getBool(_guestKey) ?? false;
     _cachedUsername = _prefs.getString(_usernameKey);
     if (firebaseReady) {
-      _sub = FirebaseAuth.instance.authStateChanges().listen((user) async {
+      // userChanges() emits events when displayName and user profile change
+      _sub = FirebaseAuth.instance.userChanges().listen((user) async {
         _user = user;
         if (user != null) {
           await _loadUsername(user);
@@ -55,7 +56,10 @@ class AuthController extends ChangeNotifier {
   bool get isGuest => _guest;
   String? get uid => _user?.uid;
   String? get email => _user?.email;
-  String? get username => _cachedUsername ?? _user?.displayName ?? _user?.email?.split('@').first;
+  String? get username =>
+      _cachedUsername ??
+      _user?.displayName ??
+      _user?.email?.split('@').first;
 
   /// Show the login screen when Firebase is available, nobody is signed in,
   /// and the user has not chosen to continue in guest mode.
@@ -67,19 +71,63 @@ class AuthController extends ChangeNotifier {
   DocumentReference<Map<String, dynamic>> _usernameDoc(String name) =>
       FirebaseFirestore.instance.collection('usernames').doc(name.trim().toLowerCase());
 
+  Future<void> setCachedUsername(String name) async {
+    final clean = name.trim();
+    if (clean.isEmpty) return;
+    _cachedUsername = clean;
+    await _prefs.setString(_usernameKey, clean);
+    final user = _user;
+    if (user != null && (user.displayName == null || user.displayName != clean)) {
+      try {
+        await user.updateDisplayName(clean);
+      } catch (_) {}
+    }
+    notifyListeners();
+  }
+
   Future<void> _loadUsername(User user) async {
-    if (user.displayName != null && user.displayName!.isNotEmpty) {
-      _cachedUsername = user.displayName;
-      await _prefs.setString(_usernameKey, user.displayName!);
+    // 1. Check user.displayName
+    if (user.displayName != null && user.displayName!.trim().isNotEmpty) {
+      _cachedUsername = user.displayName!.trim();
+      await _prefs.setString(_usernameKey, _cachedUsername!);
+      notifyListeners();
       return;
     }
+
+    // 2. Check users/{uid} document
     try {
       final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
       final uName = doc.data()?['username'] as String?;
-      if (uName != null && uName.isNotEmpty) {
-        _cachedUsername = uName;
-        await _prefs.setString(_usernameKey, uName);
+      if (uName != null && uName.trim().isNotEmpty) {
+        _cachedUsername = uName.trim();
+        await _prefs.setString(_usernameKey, _cachedUsername!);
+        try {
+          await user.updateDisplayName(_cachedUsername!);
+        } catch (_) {}
         notifyListeners();
+        return;
+      }
+    } catch (_) {}
+
+    // 3. Fallback: Search usernames collection for matching uid
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('usernames')
+          .where('uid', isEqualTo: user.uid)
+          .limit(1)
+          .get()
+          .timeout(const Duration(seconds: 8));
+      if (snap.docs.isNotEmpty) {
+        final uName = snap.docs.first.data()['username'] as String?;
+        if (uName != null && uName.trim().isNotEmpty) {
+          _cachedUsername = uName.trim();
+          await _prefs.setString(_usernameKey, _cachedUsername!);
+          try {
+            await user.updateDisplayName(_cachedUsername!);
+          } catch (_) {}
+          notifyListeners();
+          return;
+        }
       }
     } catch (_) {}
   }
@@ -169,6 +217,8 @@ class AuthController extends ChangeNotifier {
     final id = identifier.trim();
     if (id.isEmpty) throw const AuthFailure('invalid-credential');
 
+    final isUsernameLogin = !id.contains('@');
+
     try {
       final resolvedEmail = await _resolveEmail(id);
       final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -176,12 +226,78 @@ class AuthController extends ChangeNotifier {
         password: password,
       );
       final user = cred.user!;
-      await _loadUsername(user);
+
+      if (isUsernameLogin) {
+        _cachedUsername = id;
+        await _prefs.setString(_usernameKey, id);
+        try {
+          await user.updateDisplayName(id);
+        } catch (_) {}
+      } else {
+        await _loadUsername(user);
+      }
+
       await _setGuest(false);
       notifyListeners();
     } on FirebaseAuthException catch (e) {
       throw AuthFailure(e.code);
     }
+  }
+
+  /// Update or customize username for the current signed-in account.
+  Future<void> updateUsername(String newUsername) async {
+    final user = _user;
+    if (user == null) return;
+    final cleanNew = newUsername.trim();
+    if (!isValidUsername(cleanNew)) {
+      throw const AuthFailure('invalid-username');
+    }
+
+    final oldUsername = username;
+    if (oldUsername != null && oldUsername.toLowerCase() == cleanNew.toLowerCase()) {
+      return; // No change
+    }
+
+    final newDoc = _usernameDoc(cleanNew);
+    final snap = await newDoc.get().timeout(const Duration(seconds: 10));
+    if (snap.exists) {
+      final existingUid = snap.data()?['uid'];
+      if (existingUid != user.uid) {
+        throw const AuthFailure('username-taken');
+      }
+    }
+
+    // Save new username mapping
+    await newDoc.set({
+      'uid': user.uid,
+      'email': user.email ?? '',
+      'username': cleanNew,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    // Delete old mapping if different
+    if (oldUsername != null &&
+        oldUsername.isNotEmpty &&
+        oldUsername.toLowerCase() != cleanNew.toLowerCase()) {
+      try {
+        await _usernameDoc(oldUsername).delete();
+      } catch (_) {}
+    }
+
+    // Update users/{uid} root document
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'username': cleanNew,
+      }, SetOptions(merge: true));
+    } catch (_) {}
+
+    try {
+      await user.updateDisplayName(cleanNew);
+    } catch (_) {}
+
+    _cachedUsername = cleanNew;
+    await _prefs.setString(_usernameKey, cleanNew);
+    notifyListeners();
   }
 
   Future<void> sendPasswordReset(String identifier) async {

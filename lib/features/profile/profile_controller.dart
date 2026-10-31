@@ -51,6 +51,47 @@ class ProfileController extends ChangeNotifier {
     restoreFromCloud();
   }
 
+  Map<String, dynamic> toJson() => {
+        'nickname': _nickname,
+        'photo': _photo != null ? base64Encode(_photo!) : null,
+        'updatedAt': _uid == null ? 0 : (_prefs.getInt(_updatedKey(_uid!)) ?? 0),
+      };
+
+  void loadJson(Map<String, dynamic> json) {
+    final nick = json['nickname'] as String?;
+    final photoB64 = json['photo'] as String?;
+    final updatedAt = (json['updatedAt'] as num?)?.toInt() ?? 0;
+
+    final uid = _uid;
+    final localAt = uid == null ? 0 : (_prefs.getInt(_updatedKey(uid)) ?? 0);
+
+    // Update if remote is newer or local is uninitialized
+    if (updatedAt >= localAt || _nickname == null) {
+      _nickname = nick;
+      _photo = photoB64 != null ? base64Decode(photoB64) : null;
+      if (uid != null) {
+        if (nick != null && nick.isNotEmpty) {
+          _prefs.setString(_nickKey(uid), nick);
+        } else {
+          _prefs.remove(_nickKey(uid));
+        }
+        if (photoB64 != null && photoB64.isNotEmpty) {
+          _prefs.setString(_photoKey(uid), photoB64);
+        } else {
+          _prefs.remove(_photoKey(uid));
+        }
+        _prefs.setInt(_updatedKey(uid), updatedAt);
+      }
+      notifyListeners();
+    }
+  }
+
+  void resetToDefaults() {
+    _nickname = null;
+    _photo = null;
+    notifyListeners();
+  }
+
   Future<void> setNickname(String value) async {
     final nick = value.trim();
     _nickname = nick.isEmpty ? null : nick;
@@ -99,25 +140,70 @@ class ProfileController extends ChangeNotifier {
   DocumentReference<Map<String, dynamic>>? _metaDoc(String uid) =>
       FirebaseFirestore.instance.collection('users').doc(uid).collection('meta').doc('profile');
 
+  DocumentReference<Map<String, dynamic>>? _userDoc(String uid) =>
+      FirebaseFirestore.instance.collection('users').doc(uid);
+
   Future<void> uploadToCloud() async {
     final uid = _uid;
     if (uid == null) return;
+    final photoB64 = _photo != null ? base64Encode(_photo!) : null;
+    final ts = _prefs.getInt(_updatedKey(uid)) ?? DateTime.now().millisecondsSinceEpoch;
+
+    // 1. Mirror directly to root users/{uid} document with merge: true
     try {
-      final doc = _metaDoc(uid);
-      if (doc == null) return;
-      await doc.set({
+      await _userDoc(uid)?.set({
         'nickname': _nickname,
-        'photo': _photo != null ? base64Encode(_photo!) : null,
-        'updatedAt': _prefs.getInt(_updatedKey(uid)) ?? DateTime.now().millisecondsSinceEpoch,
+        'photo': photoB64,
+        'profileUpdatedAt': ts,
       }, SetOptions(merge: true)).timeout(_timeout);
     } catch (e) {
-      debugPrint('[ProfileController] Cloud upload error: $e');
+      debugPrint('[ProfileController] Root doc profile update note: $e');
+    }
+
+    // 2. Also save to meta/profile subcollection
+    try {
+      await _metaDoc(uid)?.set({
+        'nickname': _nickname,
+        'photo': photoB64,
+        'updatedAt': ts,
+      }, SetOptions(merge: true)).timeout(_timeout);
+    } catch (e) {
+      debugPrint('[ProfileController] Meta doc upload note: $e');
     }
   }
 
   Future<void> restoreFromCloud() async {
     final uid = _uid;
     if (uid == null) return;
+
+    // 1. Try reading from root users/{uid} document first
+    try {
+      final snap = await _userDoc(uid)?.get().timeout(_timeout);
+      final data = snap?.data();
+      if (data != null && (data.containsKey('nickname') || data.containsKey('photo'))) {
+        final remoteAt = (data['profileUpdatedAt'] as num?)?.toInt() ?? (data['updatedAt'] as num?)?.toInt() ?? 0;
+        final localAt = _prefs.getInt(_updatedKey(uid)) ?? 0;
+        if (remoteAt > localAt || _nickname == null) {
+          final rNick = data['nickname'] as String?;
+          final rPhotoB64 = data['photo'] as String?;
+          _nickname = rNick;
+          _photo = rPhotoB64 != null ? base64Decode(rPhotoB64) : null;
+          if (rNick != null) {
+            await _prefs.setString(_nickKey(uid), rNick);
+          }
+          if (rPhotoB64 != null) {
+            await _prefs.setString(_photoKey(uid), rPhotoB64);
+          }
+          await _prefs.setInt(_updatedKey(uid), remoteAt);
+          notifyListeners();
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint('[ProfileController] Root doc restore note: $e');
+    }
+
+    // 2. Fallback to meta/profile subcollection
     try {
       final doc = _metaDoc(uid);
       if (doc == null) return;

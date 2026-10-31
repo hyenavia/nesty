@@ -36,10 +36,27 @@ class ReleaseEntry {
 class AppChangelog {
   static const List<ReleaseEntry> releases = [
     ReleaseEntry(
-      version: '0.7.0',
+      version: '0.7.1',
       dateEn: 'October 31, 2026',
       dateId: '31 Oktober 2026',
       isCurrent: true,
+      changes: [
+        ChangeItem(
+          type: ChangeType.fixed,
+          textEn: 'Seamless Multi-Device Account Sync: Nicknames and profile photos are now fully mirrored into cloud storage and automatically synchronized across all your devices.',
+          textId: 'Sinkronisasi Akun Lintas Perangkat: Nama panggilan dan foto profil kini tersinkronisasi penuh ke cloud dan otomatis tampil di semua perangkat.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Customizable Username: Edit and personalize your @username directly from Profile settings with real-time uniqueness validation.',
+          textId: 'Kustomisasi Username: Ubah dan sesuaikan @username langsung dari Pengaturan Profil dengan validasi keunikan instan.',
+        ),
+      ],
+    ),
+    ReleaseEntry(
+      version: '0.7.0',
+      dateEn: 'October 31, 2026',
+      dateId: '31 Oktober 2026',
       changes: [
         ChangeItem(
           type: ChangeType.added,

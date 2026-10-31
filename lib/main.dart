@@ -54,6 +54,7 @@ Future<void> main() async {
     gallon: gallon,
     laundry: laundry,
     bills: bills,
+    profile: profile,
     auth: auth,
   );
   final reminders = ReminderController(

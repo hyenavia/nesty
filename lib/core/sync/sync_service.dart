@@ -9,6 +9,7 @@ import '../../features/auth/auth_controller.dart';
 import '../../features/bills/data/bills_controller.dart';
 import '../../features/gallon/data/gallon_controller.dart';
 import '../../features/laundry/data/laundry_controller.dart';
+import '../../features/profile/profile_controller.dart';
 import '../../features/routine/data/routines_controller.dart';
 import '../../features/supplies/data/supplies_controller.dart';
 import '../../features/token/data/token_controller.dart';
@@ -19,7 +20,7 @@ enum SyncState { idle, syncing, synced, offline, error }
 ///
 /// The phone is always the working copy (SharedPreferences), so the app works
 /// offline. When signed in, one Firestore document `users/{uid}` mirrors it:
-///   `{ updatedAt: <ms>, payload: <JSON string> }`
+///   `{ updatedAt: <ms>, payload: <JSON string>, ...profile fields }`
 /// Conflict rule: newest `updatedAt` wins. The same JSON is used for the
 /// offline import/export file.
 class SyncService extends ChangeNotifier {
@@ -31,6 +32,7 @@ class SyncService extends ChangeNotifier {
     required GallonController gallon,
     required LaundryController laundry,
     required BillsController bills,
+    required ProfileController profile,
     required AuthController auth,
   })  : _supplies = supplies,
         _routines = routines,
@@ -38,6 +40,7 @@ class SyncService extends ChangeNotifier {
         _gallon = gallon,
         _laundry = laundry,
         _bills = bills,
+        _profile = profile,
         _auth = auth {
     _localUpdatedAt = _prefs.getInt(_tsKey) ?? 0;
     final lastMs = _prefs.getInt(_lastSyncKey);
@@ -50,6 +53,7 @@ class SyncService extends ChangeNotifier {
     _gallon.addListener(_onLocalChange);
     _laundry.addListener(_onLocalChange);
     _bills.addListener(_onLocalChange);
+    _profile.addListener(_onLocalChange);
     _auth.addListener(_onAuthChanged);
     _onAuthChanged();
   }
@@ -63,6 +67,7 @@ class SyncService extends ChangeNotifier {
   final GallonController _gallon;
   final LaundryController _laundry;
   final BillsController _bills;
+  final ProfileController _profile;
   final AuthController _auth;
 
   SyncState _state = SyncState.idle;
@@ -101,6 +106,7 @@ class SyncService extends ChangeNotifier {
         'gallon': _gallon.toJson(),
         'laundry': _laundry.toJson(),
         'bills': _bills.toJson(),
+        'profile': _profile.toJson(),
       };
 
   void _applyMap(Map<String, dynamic> map) {
@@ -115,6 +121,7 @@ class SyncService extends ChangeNotifier {
     if (laundryList != null) LaundryController.parse(laundryList);
     final billsList = map['bills'] as List<dynamic>?;
     if (billsList != null) BillsController.parse(billsList);
+    final profileMap = map['profile'] as Map<String, dynamic>?;
 
     _applying = true;
     try {
@@ -124,6 +131,9 @@ class SyncService extends ChangeNotifier {
       gallonMap != null ? _gallon.loadJson(gallonMap) : _gallon.resetToDefaults();
       laundryList != null ? _laundry.loadJson(laundryList) : _laundry.resetToDefaults();
       billsList != null ? _bills.loadJson(billsList) : _bills.resetToDefaults();
+      if (profileMap != null) {
+        _profile.loadJson(profileMap);
+      }
     } finally {
       _applying = false;
     }
@@ -189,6 +199,7 @@ class SyncService extends ChangeNotifier {
       _gallon.resetToDefaults();
       _laundry.resetToDefaults();
       _bills.resetToDefaults();
+      _profile.resetToDefaults();
     } finally {
       _applying = false;
     }
@@ -224,8 +235,27 @@ class SyncService extends ChangeNotifier {
           .timeout(const Duration(seconds: 10));
       final data = snap.data();
       if (data != null) {
-        final payload = jsonDecode(data['payload'] as String) as Map<String, dynamic>;
-        _applyMap(payload);
+        // Restore username if available in document
+        final rUsername = data['username'] as String?;
+        if (rUsername != null && rUsername.trim().isNotEmpty) {
+          _auth.setCachedUsername(rUsername.trim());
+        }
+
+        // Restore profile fields directly from doc if available
+        if (data['nickname'] != null || data['photo'] != null) {
+          _profile.loadJson({
+            'nickname': data['nickname'],
+            'photo': data['photo'],
+            'updatedAt': data['profileUpdatedAt'] ?? data['updatedAt'] ?? 0,
+          });
+        }
+
+        final rawPayload = data['payload'] as String?;
+        if (rawPayload != null && rawPayload.isNotEmpty) {
+          final payload = jsonDecode(rawPayload) as Map<String, dynamic>;
+          _applyMap(payload);
+        }
+
         final remoteTs = (data['updatedAt'] as num?)?.toInt() ?? DateTime.now().millisecondsSinceEpoch;
         _setLocalTs(remoteTs);
         _setState(SyncState.synced);
@@ -242,11 +272,19 @@ class SyncService extends ChangeNotifier {
     if (uid == null) return;
     _setState(SyncState.syncing);
     try {
+      final photoB64 = _profile.photo != null ? base64Encode(_profile.photo!) : null;
+      final profileTs = _profile.toJson()['updatedAt'] ?? _localUpdatedAt;
+
       await _doc(uid)
           .set({
             'updatedAt': _localUpdatedAt,
+            'username': _auth.username,
+            'email': _auth.email,
+            'nickname': _profile.nickname,
+            'photo': photoB64,
+            'profileUpdatedAt': profileTs,
             'payload': jsonEncode(snapshot()),
-          })
+          }, SetOptions(merge: true))
           .timeout(const Duration(seconds: 10));
       _setState(SyncState.synced);
       _recordSyncSuccess();
@@ -273,9 +311,28 @@ class SyncService extends ChangeNotifier {
         await _push(); // brand new account: upload what is on this phone
         return;
       }
+
+      // Restore username if present
+      final rUsername = data['username'] as String?;
+      if (rUsername != null && rUsername.trim().isNotEmpty) {
+        _auth.setCachedUsername(rUsername.trim());
+      }
+
+      // Restore profile fields directly if present
+      if (data['nickname'] != null || data['photo'] != null) {
+        _profile.loadJson({
+          'nickname': data['nickname'],
+          'photo': data['photo'],
+          'updatedAt': data['profileUpdatedAt'] ?? data['updatedAt'] ?? 0,
+        });
+      }
+
       final remoteTs = (data['updatedAt'] as num?)?.toInt() ?? 0;
       if (remoteTs > _localUpdatedAt) {
-        _applyMap(jsonDecode(data['payload'] as String) as Map<String, dynamic>);
+        final rawPayload = data['payload'] as String?;
+        if (rawPayload != null && rawPayload.isNotEmpty) {
+          _applyMap(jsonDecode(rawPayload) as Map<String, dynamic>);
+        }
         _setLocalTs(remoteTs);
         _setState(SyncState.synced);
         _recordSyncSuccess();
@@ -303,6 +360,7 @@ class SyncService extends ChangeNotifier {
     _gallon.removeListener(_onLocalChange);
     _laundry.removeListener(_onLocalChange);
     _bills.removeListener(_onLocalChange);
+    _profile.removeListener(_onLocalChange);
     _auth.removeListener(_onAuthChanged);
     super.dispose();
   }
