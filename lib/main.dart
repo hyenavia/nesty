@@ -8,6 +8,7 @@ import 'app.dart';
 import 'core/l10n/locale_controller.dart';
 import 'core/notifications/reminder_controller.dart';
 import 'core/sync/sync_service.dart';
+import 'core/update/update_checker.dart';
 import 'core/utils/photo_service.dart';
 import 'features/auth/auth_controller.dart';
 import 'features/bills/data/bills_controller.dart';
@@ -66,6 +67,10 @@ Future<void> main() async {
   );
   await reminders.init();
 
+  final update = UpdateController();
+  // Silently check for GitHub releases in the background
+  update.checkSilently();
+
   runApp(
     MultiProvider(
       providers: [
@@ -81,6 +86,7 @@ Future<void> main() async {
         ChangeNotifierProvider.value(value: profile),
         ChangeNotifierProvider.value(value: sync),
         ChangeNotifierProvider.value(value: reminders),
+        ChangeNotifierProvider.value(value: update),
       ],
       child: const NestyApp(),
     ),

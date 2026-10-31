@@ -36,10 +36,54 @@ class ReleaseEntry {
 class AppChangelog {
   static const List<ReleaseEntry> releases = [
     ReleaseEntry(
-      version: '0.3.0',
+      version: '0.7.0',
       dateEn: 'October 31, 2026',
       dateId: '31 Oktober 2026',
       isCurrent: true,
+      changes: [
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'In-App GitHub Release Checker: Automatically checks for new APK updates from GitHub releases with direct one-tap download.',
+          textId: 'Pemeriksa Rilis GitHub In-App: Otomatis memeriksa pembaruan APK dari rilis GitHub dengan tombol unduh langsung satu ketukan.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Dynamic Update Status & NEW Badge: Prompts when a newer version is ready and highlights update availability in Settings.',
+          textId: 'Status Pembaruan Dinamis & Badge BARU: Memberitahu saat ada versi baru dan memunculkan badge indikator di Pengaturan.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Send Feedback & Issue Reporting: Quick access in Settings to submit bug reports and feature requests.',
+          textId: 'Kirim Masukan & Laporan Masalah: Akses cepat di Pengaturan untuk mengirim laporan bug dan saran fitur.',
+        ),
+      ],
+    ),
+    ReleaseEntry(
+      version: '0.6.0',
+      dateEn: 'October 31, 2026',
+      dateId: '31 Oktober 2026',
+      changes: [
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Full Home Management Suite: Electricity token tracker, water gallon predictor, laundry lifecycle tracker, and recurring bills.',
+          textId: 'Suite Manajemen Rumah Lengkap: Pelacak token listrik, prediksi galon air, status penatu/laundry, dan tagihan rutin bulanan.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Bilingual 3-Screen Onboarding: Smooth introductory flow with cozy clay mascot illustrations and quick switch between English and Indonesian.',
+          textId: 'Onboarding 3 Layar Bilingual: Alur perkenalan ramah dengan ilustrasi maskot clay dan tombol alih bahasa instan.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Cozy Clay Mascot Branding: Warm clay house icon, native splash screen, and responsive web landing page.',
+          textId: 'Identitas Visual Maskot Cozy Clay: Ikon rumah clay hangat, splash screen asli, dan landing page web responsif.',
+        ),
+      ],
+    ),
+    ReleaseEntry(
+      version: '0.3.0',
+      dateEn: 'October 31, 2026',
+      dateId: '31 Oktober 2026',
       changes: [
         ChangeItem(
           type: ChangeType.added,

@@ -4,6 +4,25 @@ All notable changes to the **Nesty** - Little Things, Taken Care Of project will
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-10-31
+
+### Added
+- **In-App GitHub Release Update Checker (`UpdateCheckerService`)**:
+  - Automatically checks GitHub Releases API (`https://api.github.com/repos/hyenavia/nesty/releases/latest`) on launch and on-demand.
+  - Compares local SemVer against remote release version.
+  - Interactive "Update Available!" dialog displaying full release notes formatted cleanly.
+  - Direct one-tap "Update Now" download targeting `Nesty.apk` via external browser intent (`url_launcher`).
+- **Dynamic Update Status & Indicators (`ProfileScreen`)**:
+  - Added "Check for Updates" tile with dynamic subtitle (`Nesty v0.7.0 • Latest Release` or `v0.7.0 ➔ v0.7.x (Update Available!)`).
+  - Eye-catching vibrant orange/peach `NEW` badge when an update is available.
+  - Manual check trigger with toast status feedback (`Checking for updates...` and `You are using the latest version`).
+- **Feedback & Bug Reporting (`send_feedback`)**:
+  - Dedicated "Send Feedback" option in Settings linking to the repository issue tracker.
+- **Cross-Platform URL Launching (`url_launcher`)**:
+  - Added `url_launcher` dependency with Android `<queries>` declarations for secure HTTPS URL dispatching.
+
+---
+
 ## [0.6.0] - 2026-10-31
 
 ### Added

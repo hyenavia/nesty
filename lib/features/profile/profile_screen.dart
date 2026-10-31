@@ -8,6 +8,7 @@ import '../../core/notifications/reminder_controller.dart';
 import '../../core/sync/backup_service.dart';
 import '../../core/sync/sync_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/update/update_checker.dart';
 import '../../core/widgets/user_avatar.dart';
 import '../auth/auth_controller.dart';
 import '../onboarding/onboarding_controller.dart';
@@ -155,6 +156,7 @@ class ProfileScreen extends StatelessWidget {
     final sync = context.watch<SyncService>();
     final profile = context.watch<ProfileController>();
     final reminders = context.watch<ReminderController>();
+    final update = context.watch<UpdateController>();
 
     final displayName = profile.nickname?.trim().isNotEmpty == true
         ? profile.nickname!.trim()
@@ -507,6 +509,70 @@ class ProfileScreen extends StatelessWidget {
           // ---- ABOUT & UPDATES
           sectionHeader(s.t('about_support')),
           sectionCard([
+            // Check for Updates (matching Wall o' Pay)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.system_update_alt_rounded),
+              title: Row(
+                children: [
+                  Text(
+                    s.t('check_updates'),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  if (update.availableUpdate != null && update.availableUpdate!.hasUpdate) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.peach,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        s.t('new_badge'),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              subtitle: Text(
+                update.availableUpdate != null && update.availableUpdate!.hasUpdate
+                    ? 'v${UpdateCheckerService.currentVersion} ➔ v${update.availableUpdate!.latestVersion} (${s.t('update_available')})'
+                    : 'Nesty v${UpdateCheckerService.currentVersion} • ${s.t('latest_release')}',
+                style: TextStyle(
+                  color: update.availableUpdate != null && update.availableUpdate!.hasUpdate
+                      ? AppColors.peach
+                      : null,
+                  fontWeight: update.availableUpdate != null && update.availableUpdate!.hasUpdate
+                      ? FontWeight.w700
+                      : null,
+                ),
+              ),
+              trailing: update.isChecking
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.chevron_right_rounded),
+              onTap: () {
+                if (update.availableUpdate != null && update.availableUpdate!.hasUpdate) {
+                  UpdateCheckerService.showUpdateDialog(context, update.availableUpdate!);
+                } else {
+                  _toast(context, s.t('checking_updates'));
+                  UpdateCheckerService.checkAndPromptUpdate(
+                    context,
+                    controller: update,
+                    silentIfUpToDate: false,
+                  );
+                }
+              },
+            ),
+            const Divider(height: 1),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.history_edu_rounded),
@@ -514,6 +580,17 @@ class ProfileScreen extends StatelessWidget {
               subtitle: Text(s.t('changelog_sub'), style: theme.textTheme.bodySmall),
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: () => showAppChangelogSheet(context),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.feedback_outlined),
+              title: Text(s.t('send_feedback'), style: const TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: Text(s.t('send_feedback_sub'), style: theme.textTheme.bodySmall),
+              trailing: const Icon(Icons.open_in_new_rounded, size: 18),
+              onTap: () {
+                UpdateCheckerService.openUrl(UpdateCheckerService.feedbackUrl);
+              },
             ),
             const Divider(height: 1),
             ListTile(
@@ -539,7 +616,7 @@ class ProfileScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: const Text(
-                  'v0.6.0 (Build 5)',
+                  'v0.7.0 (Build 6)',
                   style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: AppColors.brown),
                 ),
               ),

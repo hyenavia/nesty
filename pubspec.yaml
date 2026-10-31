@@ -1,7 +1,7 @@
 name: nesty
 description: "Nesty - Little Things, Taken Care Of."
 publish_to: 'none'
-version: 0.6.0+5
+version: 0.7.0+6
 
 environment:
   sdk: ^3.10.0
@@ -27,6 +27,7 @@ dependencies:
   file_picker: ^13.2.0
   image_picker: ^1.2.4
   path_provider: ^2.1.5
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:
