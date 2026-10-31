@@ -616,7 +616,7 @@ class ProfileScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: const Text(
-                  'v0.7.1 (Build 7)',
+                  'v0.7.2 (Build 8)',
                   style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: AppColors.brown),
                 ),
               ),

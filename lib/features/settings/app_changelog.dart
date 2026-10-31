@@ -36,10 +36,22 @@ class ReleaseEntry {
 class AppChangelog {
   static const List<ReleaseEntry> releases = [
     ReleaseEntry(
-      version: '0.7.1',
+      version: '0.7.2',
       dateEn: 'October 31, 2026',
       dateId: '31 Oktober 2026',
       isCurrent: true,
+      changes: [
+        ChangeItem(
+          type: ChangeType.fixed,
+          textEn: 'Deterministic Release Keystore: Integrated official release signing keystore into GitHub Actions CI, resolving Android signature mismatch conflicts during in-app updates.',
+          textId: 'Kunci Rilis Deterministik: Mengintegrasikan keystore rilis resmi ke GitHub Actions CI, menuntaskan konflik tanda tangan Android saat pembaruan in-app.',
+        ),
+      ],
+    ),
+    ReleaseEntry(
+      version: '0.7.1',
+      dateEn: 'October 31, 2026',
+      dateId: '31 Oktober 2026',
       changes: [
         ChangeItem(
           type: ChangeType.fixed,
