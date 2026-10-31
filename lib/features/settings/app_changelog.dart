@@ -1,0 +1,271 @@
+import 'package:flutter/material.dart';
+
+import '../../core/l10n/app_strings.dart';
+import '../../core/theme/app_colors.dart';
+
+enum ChangeType { added, changed, fixed }
+
+class ChangeItem {
+  final ChangeType type;
+  final String textEn;
+  final String textId;
+
+  const ChangeItem({
+    required this.type,
+    required this.textEn,
+    required this.textId,
+  });
+}
+
+class ReleaseEntry {
+  final String version;
+  final String dateEn;
+  final String dateId;
+  final bool isCurrent;
+  final List<ChangeItem> changes;
+
+  const ReleaseEntry({
+    required this.version,
+    required this.dateEn,
+    required this.dateId,
+    this.isCurrent = false,
+    required this.changes,
+  });
+}
+
+class AppChangelog {
+  static const List<ReleaseEntry> releases = [
+    ReleaseEntry(
+      version: '0.3.0',
+      dateEn: 'October 31, 2026',
+      dateId: '31 Oktober 2026',
+      isCurrent: true,
+      changes: [
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Dual Login with Username or Email: Sign in seamlessly using either your username or verified email address.',
+          textId: 'Login Fleksibel dengan Username atau Email: Masuk akun menggunakan username maupun alamat email terdaftar.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Password Reset: Reset password link sent directly to your registered email address with one tap.',
+          textId: 'Reset Kata Sandi: Kirim tautan reset kata sandi langsung ke email terdaftar hanya dengan satu ketukan.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Custom Profile & Photo: Set a personalized nickname and choose profile photo from gallery with cloud backup.',
+          textId: 'Profil & Foto Khusus: Pasang nama panggilan dan unggah foto profil dari galeri yang tersinkron otomatis ke cloud.',
+        ),
+        ChangeItem(
+          type: ChangeType.changed,
+          textEn: 'Upgraded Settings Hub: Matching Wall o\' Pay layout with quick actions for Cloud Sync, Offline File Backup, Smart Reminders, and In-App Changelog.',
+          textId: 'Pusat Pengaturan Terpadu: Menyesuaikan tata letak Wall o\' Pay dengan aksi Sinkronisasi Cloud, Cadangan File, Pengingat Pintar, dan Catatan Pembaruan.',
+        ),
+      ],
+    ),
+    ReleaseEntry(
+      version: '0.2.0',
+      dateEn: 'October 31, 2026',
+      dateId: '31 Oktober 2026',
+      changes: [
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Firebase Authentication & Cloud Synchronization: Optional account backup and real-time cross-device sync.',
+          textId: 'Autentikasi Firebase & Sinkronisasi Cloud: Cadangan akun dan sinkronisasi lintas perangkat.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Smart Reminders Engine: Timezone-aware local notifications for routine cleaning and supplies checking.',
+          textId: 'Mesin Pengingat Pintar: Notifikasi lokal berbasis zona waktu untuk jadwal bersih-bersih dan cek stok.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Offline JSON Import & Export: Complete privacy-friendly offline backup and restore capabilities.',
+          textId: 'Impor & Ekspor JSON Offline: Cadangkan dan pulihkan data secara offline tanpa memerlukan akun online.',
+        ),
+      ],
+    ),
+    ReleaseEntry(
+      version: '0.1.0',
+      dateEn: 'October 25, 2026',
+      dateId: '25 Oktober 2026',
+      changes: [
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Initial Core Features: Daily supplies tracking (safe, low, out), recurring routines, electricity token, and water gallon cards.',
+          textId: 'Fitur Inti Awal: Pelacakan stok harian (aman, menipis, habis), rutinitas berulang, kartu token listrik dan galon air.',
+        ),
+      ],
+    ),
+  ];
+}
+
+void showAppChangelogSheet(BuildContext context) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) => const AppChangelogSheet(),
+  );
+}
+
+class AppChangelogSheet extends StatelessWidget {
+  const AppChangelogSheet({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final s = context.s;
+    final isIndo = s.lang == 'id';
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.82,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      builder: (_, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 44,
+              height: 4,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.peach.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.history_edu_rounded, color: AppColors.brown),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.t('version_changelog'),
+                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                        Text(
+                          s.t('changelog_sub'),
+                          style: theme.textTheme.bodySmall?.copyWith(color: AppColors.brownSoft),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView.separated(
+                controller: scrollController,
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                itemCount: AppChangelog.releases.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 20),
+                itemBuilder: (ctx, idx) {
+                  final rel = AppChangelog.releases[idx];
+                  return Card(
+                    margin: EdgeInsets.zero,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: rel.isCurrent ? AppColors.safe.withValues(alpha: 0.2) : theme.colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(999),
+                                  border: Border.all(
+                                    color: rel.isCurrent ? AppColors.safe : theme.colorScheme.outlineVariant,
+                                  ),
+                                ),
+                                child: Text(
+                                  'v${rel.version}${rel.isCurrent ? ' (Latest)' : ''}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 12,
+                                    color: rel.isCurrent ? AppColors.safe : theme.colorScheme.onSurface,
+                                  ),
+                                ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                isIndo ? rel.dateId : rel.dateEn,
+                                style: theme.textTheme.bodySmall?.copyWith(color: AppColors.brownSoft),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          for (final change in rel.changes) ...[
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _badge(change.type),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      isIndo ? change.textId : change.textEn,
+                                      style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _badge(ChangeType type) {
+    final (label, color, bg) = switch (type) {
+      ChangeType.added => ('ADDED', AppColors.safe, AppColors.safe.withValues(alpha: 0.15)),
+      ChangeType.changed => ('CHANGED', AppColors.peach, AppColors.peach.withValues(alpha: 0.35)),
+      ChangeType.fixed => ('FIXED', AppColors.low, AppColors.low.withValues(alpha: 0.2)),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: color),
+      ),
+    );
+  }
+}

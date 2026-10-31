@@ -1,0 +1,65 @@
+name: nesty
+description: "Nesty - Little Things, Taken Care Of."
+publish_to: 'none'
+version: 0.6.0+5
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  provider: ^6.1.2
+  shared_preferences: ^2.3.2
+  google_fonts: ^6.2.1
+  # Firebase (account + cloud data)
+  firebase_core: ^4.4.0
+  firebase_auth: ^6.1.4
+  cloud_firestore: ^6.1.2
+  # Reminders
+  flutter_local_notifications: ^21.0.0
+  timezone: ^0.11.0
+  flutter_timezone: ^5.0.0
+  # Offline import / export & Photos
+  file_picker: ^13.2.0
+  image_picker: ^1.2.4
+  path_provider: ^2.1.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.6
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/images/logo.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/logo.png"
+  web:
+    generate: true
+    image_path: "assets/images/logo.png"
+    background_color: "#FFF7EC"
+    theme_color: "#F2A07F"
+  windows:
+    generate: true
+    image_path: "assets/images/logo.png"
+    icon_size: 48
+
+# Generate native splash: dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#FFF7EC"
+  android_12:
+    color: "#FFF7EC"
+    icon_background_color: "#FFE9D8"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1020419263773",
+    "project_id": "nesty-af74d",
+    "storage_bucket": "nesty-af74d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1020419263773:android:1466eb957bc81ed28365f4",
+        "android_client_info": {
+          "package_name": "com.hyenavia.nesty"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsEoyIODmIeVW9cg5n5wqD-hcqJRNOnm0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

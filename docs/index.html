@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nesty - Little Things, Taken Care Of. | Personal Assistant for Independent Living</title>
+  <meta name="description" content="A calm, modern, and offline-first personal assistant for independent living: electricity tokens, water gallon refills, laundry tracking, daily supplies, and cleaning routines.">
+  <meta name="keywords" content="Nesty, independent living, anak kost, home routines, household inventory, electricity token, water gallon tracker, laundry tracker, flutter, offline first">
+  <meta name="author" content="hyenavia">
+
+  <!-- Open Graph / Social Meta -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Nesty - Little Things, Taken Care Of.">
+  <meta property="og:description" content="Calm, lightning-fast personal assistant for independent living. Manage utilities, supplies, and cleaning routines before they become problems.">
+  <meta property="og:image" content="images/logo.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Nesty - Little Things, Taken Care Of.">
+  <meta name="twitter:description" content="Calm, lightning-fast personal assistant for independent living. Manage utilities, supplies, and cleaning routines before they become problems.">
+  <meta name="twitter:image" content="images/logo.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="images/icon.png">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Ambient Glow Effects -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="#" class="brand">
+        <img src="images/logo.png" alt="Nesty Logo" class="brand-icon">
+        <span class="brand-name">Nesty</span>
+        <span class="brand-tag app-version-tag">v0.6.0</span>
+      </a>
+
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#about" class="nav-link">About</a></li>
+        <li><a href="#features" class="nav-link">Features</a></li>
+        <li><a href="#showcase" class="nav-link">Showcase</a></li>
+        <li><a href="#comparison" class="nav-link">Comparison</a></li>
+        <li><a href="#download" class="nav-link btn-nav-download">Download APK</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <span class="theme-badge" title="Signature Cozy Espresso & Peach Theme">
+          <span class="badge-dot"></span>
+          <span>Warm & Cozy</span>
+        </span>
+        <button id="mobile-toggle" class="mobile-toggle" aria-label="Toggle Mobile Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO SECTION -->
+    <section class="hero" id="about">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span class="badge-pulse"></span>
+            <span><span class="app-version-tag">v0.6.0</span> • Latest Stable Release</span>
+          </div>
+
+          <h1 class="hero-title">
+            Little Things,<br>
+            <span class="gradient-text">Taken Care Of.</span>
+          </h1>
+
+          <p class="hero-desc">
+            A calm, lightning-fast personal assistant engineered for independent living. Nesty reminds you about electricity tokens, water gallons, laundry, daily supplies, and cleaning routines—so everything is sorted before it becomes a problem.
+          </p>
+
+          <div class="hero-actions">
+            <a href="https://github.com/hyenavia/nesty/releases/latest/download/Nesty.apk" class="btn btn-primary" id="hero-cta-download">
+              <span>📥</span>
+              <span id="hero-download-text">Download APK (v0.6.0)</span>
+            </a>
+            <a href="#showcase" class="btn btn-secondary">
+              <span>📱</span>
+              <span>Explore Interface</span>
+            </a>
+          </div>
+
+          <div class="hero-highlights">
+            <div class="highlight-item">
+              <span class="highlight-icon">⚡</span>
+              <span>Offline-First</span>
+            </div>
+            <div class="highlight-item">
+              <span class="highlight-icon">🛡️</span>
+              <span>Zero Ads</span>
+            </div>
+            <div class="highlight-item">
+              <span class="highlight-icon">☁️</span>
+              <span>Cloud Sync</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phone Mockup Preview -->
+        <div class="phone-mockup-wrapper">
+          <div class="phone-card-float float-top">
+            <div class="float-icon icon-safe">⚡</div>
+            <div class="float-text">
+              <span class="float-label">Electricity Token</span>
+              <span class="float-val">Safe • 18 Days Left</span>
+            </div>
+          </div>
+
+          <div class="phone-card-float float-bottom">
+            <div class="float-icon icon-warn">💧</div>
+            <div class="float-text">
+              <span class="float-label">Water Gallon</span>
+              <span class="float-val">Running Low • Refill Soon</span>
+            </div>
+          </div>
+
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="screen-app-bar">
+                <div>
+                  <div class="app-user-greeting">Hi, Nesty! 👋</div>
+                  <div class="app-user-name">Independent Living</div>
+                </div>
+                <div class="app-user-avatar">N</div>
+              </div>
+
+              <!-- Status Card -->
+              <div class="screen-status-card">
+                <div class="status-card-title">Daily Home Overview</div>
+                <div class="status-card-amount">All Sorted Calmly</div>
+                <div class="status-card-stats">
+                  <div class="stat-pill">
+                    Today's Routines
+                    <span style="color: var(--income);">3 Pending</span>
+                  </div>
+                  <div class="stat-pill">
+                    Supplies Alert
+                    <span style="color: var(--warning);">1 Low Stock</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Actions -->
+              <div class="screen-quick-actions">
+                <button class="quick-action-btn">
+                  <div class="quick-action-icon">⚡</div>
+                  <span>Token</span>
+                </button>
+                <button class="quick-action-btn">
+                  <div class="quick-action-icon">💧</div>
+                  <span>Gallon</span>
+                </button>
+                <button class="quick-action-btn">
+                  <div class="quick-action-icon">🧺</div>
+                  <span>Laundry</span>
+                </button>
+                <button class="quick-action-btn">
+                  <div class="quick-action-icon">🛒</div>
+                  <span>Supplies</span>
+                </button>
+              </div>
+
+              <!-- Today's Checklist -->
+              <div class="screen-section-title">
+                <span>Today's Routines</span>
+                <a href="#showcase">View All</a>
+              </div>
+
+              <div class="mock-routine-list">
+                <div class="mock-routine-item">
+                  <div class="routine-left">
+                    <div class="routine-icon-box">🧹</div>
+                    <div>
+                      <div class="routine-name">Clean the room</div>
+                      <div class="routine-sub">Morning Routine • Living Space</div>
+                    </div>
+                  </div>
+                  <div class="routine-badge badge-done">Done ✓</div>
+                </div>
+
+                <div class="mock-routine-item">
+                  <div class="routine-left">
+                    <div class="routine-icon-box">🧴</div>
+                    <div>
+                      <div class="routine-name">Check daily supplies</div>
+                      <div class="routine-sub">Bath & Kitchen • 1 item low</div>
+                    </div>
+                  </div>
+                  <div class="routine-badge badge-pending">Due</div>
+                </div>
+
+                <div class="mock-routine-item">
+                  <div class="routine-left">
+                    <div class="routine-icon-box">🧺</div>
+                    <div>
+                      <div class="routine-name">Pick up laundry</div>
+                      <div class="routine-sub">Drop-off #2 • Ready by 4 PM</div>
+                    </div>
+                  </div>
+                  <div class="routine-badge badge-pending">Today</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CORE FEATURES SECTION -->
+    <section class="features-section" id="features">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Core Features</span>
+          <h2 class="section-title">Designed for Ease, Peace of Mind & Simplicity</h2>
+          <p class="section-desc">Every essential aspect of independent living organized into one distraction-free assistant.</p>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon-wrapper">⚡</div>
+            <h3 class="feature-title">Offline-First & Instant</h3>
+            <p class="feature-text">Zero loading spinners or network lag. Built on lightning-fast local storage that operates reliably anywhere, anytime.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper">📦</div>
+            <h3 class="feature-title">Smart Stock Tracker</h3>
+            <p class="feature-text">Categorize toiletries, kitchen essentials, and pantry items. Running low items are instantly grouped for easy grocery runs.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper">🧹</div>
+            <h3 class="feature-title">Cleaning Routines</h3>
+            <p class="feature-text">Set manageable cadences for laundry, bedding, and floor cleaning so chores never pile up into stressful weekends.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper">💧</div>
+            <h3 class="feature-title">Token & Gallon Estimator</h3>
+            <p class="feature-text">Keep track of your electricity tokens and water gallons with predictive alerts before they run completely empty.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper">☁️</div>
+            <h3 class="feature-title">Flexible Cloud Sync</h3>
+            <p class="feature-text">Enjoy 100% anonymous offline usage, or connect Firebase to securely sync your data across devices in real time.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper">🌐</div>
+            <h3 class="feature-title">Bilingual & Clean</h3>
+            <p class="feature-text">Full support for English and Bahasa Indonesia with zero ads, zero trackers, and an uncluttered Material 3 interface.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SHOWCASE SECTION -->
+    <section class="showcase-section" id="showcase">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Interface</span>
+          <h2 class="section-title">Explore Nesty Interface</h2>
+          <p class="section-desc">Clean, warm, and responsive screens crafted for everyday living.</p>
+        </div>
+
+        <div class="showcase-tabs">
+          <button class="showcase-tab-btn active" data-tab="beranda">🏠 Dashboard</button>
+          <button class="showcase-tab-btn" data-tab="supplies">🛒 Supplies</button>
+          <button class="showcase-tab-btn" data-tab="utilities">⚡ Utilities</button>
+          <button class="showcase-tab-btn" data-tab="routines">🧹 Routines</button>
+        </div>
+
+        <div class="showcase-content-card">
+          <div class="showcase-desc-box">
+            <h3 class="showcase-desc-title" id="showcase-title">All-in-One Calm Home Dashboard</h3>
+            <p class="showcase-desc-text" id="showcase-desc">View electricity token status, water gallon countdown, laundry pickup dates, daily supplies, and cleaning routines at a single glance.</p>
+            <ul class="showcase-feature-list" id="showcase-bullets">
+              <li><span class="check-icon">✓</span> Cozy overview cards with clear visual safety and low-stock indicators</li>
+              <li><span class="check-icon">✓</span> One-tap action buttons for quick token, gallon, and laundry logging</li>
+              <li><span class="check-icon">✓</span> Today's active routine checklist pulled directly from fast local storage</li>
+            </ul>
+          </div>
+
+          <div class="showcase-visual-preview">
+            <div style="background: var(--bg-surface); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <span style="font-weight: 700; color: var(--primary);">Nesty Live Engine</span>
+                <span style="font-size: 0.75rem; background: var(--primary-container); color: var(--primary); padding: 0.2rem 0.5rem; border-radius: 6px;">Flutter Native</span>
+              </div>
+              <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+                Engineered with Flutter & Provider Architecture, delivering smooth 60 FPS transitions and instant local-first offline responsiveness.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DOWNLOAD SECTION -->
+    <section class="download-section" id="download">
+      <div class="container">
+        <div class="download-card-wrapper">
+          <div class="download-content">
+            <div>
+              <h2 class="download-title">Calm Your Daily Life with Nesty</h2>
+              <p class="download-subtitle">Download the standalone Nesty APK installer directly to your Android device for free and without advertisements.</p>
+
+              <div class="download-cta-group">
+                <a href="https://github.com/hyenavia/nesty/releases/latest/download/Nesty.apk" class="btn-download-main" id="btn-download-apk" target="_blank" rel="noopener">
+                  <span>📥</span>
+                  <span>Direct APK Download</span>
+                </a>
+                <a href="https://github.com/hyenavia/nesty/releases" class="btn-github-release" target="_blank" rel="noopener">
+                  <span>🔗</span>
+                  <span>View on GitHub Releases</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Specs Card -->
+            <div class="download-specs-card">
+              <div class="specs-title">
+                <span>📱</span>
+                <span>Release Specifications</span>
+              </div>
+              <div class="specs-list">
+                <div class="specs-item">
+                  <span class="specs-label">App Version</span>
+                  <span class="specs-val" id="specs-version-val">v0.6.0 (Release)</span>
+                </div>
+                <div class="specs-item">
+                  <span class="specs-label">File Size</span>
+                  <span class="specs-val">~20 MB</span>
+                </div>
+                <div class="specs-item">
+                  <span class="specs-label">Operating System</span>
+                  <span class="specs-val">Android 8.0+ (Oreo)</span>
+                </div>
+                <div class="specs-item">
+                  <span class="specs-label">License</span>
+                  <span class="specs-val">Open Source (MIT)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Android Install Guide -->
+        <div class="install-guide-box">
+          <h3 class="install-guide-title">
+            <span>⚙️</span>
+            <span>How to Install APK on Android</span>
+          </h3>
+          <div class="install-steps">
+            <div class="install-step-card">
+              <div class="step-num">1</div>
+              <strong>1. Download APK</strong>
+              <p class="step-text">Click the download button above and wait for the Nesty APK file to finish downloading.</p>
+            </div>
+            <div class="install-step-card">
+              <div class="step-num">2</div>
+              <strong>2. Open File</strong>
+              <p class="step-text">Tap the download notification or locate the file in your device's 'Downloads' folder.</p>
+            </div>
+            <div class="install-step-card">
+              <div class="step-num">3</div>
+              <strong>3. Allow Unknown Sources</strong>
+              <p class="step-text">If prompted with 'Install unknown apps', tap 'Settings' and toggle 'Allow from this source'.</p>
+            </div>
+            <div class="install-step-card">
+              <div class="step-num">4</div>
+              <strong>4. Install & Launch</strong>
+              <p class="step-text">Tap 'Install'. Launch Nesty and enjoy relaxed, well-organized daily living!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPARISON SECTION -->
+    <section class="comparison-section" id="comparison">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Comparison</span>
+          <h2 class="section-title">Why Choose Nesty?</h2>
+          <p class="section-desc">How Nesty provides peace of mind compared to conventional checklist and reminder apps.</p>
+        </div>
+
+        <div class="comparison-table-wrapper">
+          <table class="comp-table">
+            <thead>
+              <tr>
+                <th>Aspect / Criteria</th>
+                <th class="highlight-col">🏠 Nesty</th>
+                <th>Conventional Task / Habit Apps</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Speed & Startup</td>
+                <td class="highlight-col">Instant (Zero latency local storage)</td>
+                <td>Slow online cloud queries & spin locks</td>
+              </tr>
+              <tr>
+                <td>Offline Capability</td>
+                <td class="highlight-col">100% Full Functionality</td>
+                <td>Features blocked while offline</td>
+              </tr>
+              <tr>
+                <td>Advertisements</td>
+                <td class="highlight-col">Zero Ads (Completely Clean)</td>
+                <td>Aggressive banner and full-screen ads</td>
+              </tr>
+              <tr>
+                <td>Data Privacy</td>
+                <td class="highlight-col">Stored strictly on your device</td>
+                <td>Monetized or shared with ad networks</td>
+              </tr>
+              <tr>
+                <td>Household Specifics</td>
+                <td class="highlight-col">Tokens, Gallon, Laundry & Stock built-in</td>
+                <td>Generic checklists with no domain intelligence</td>
+              </tr>
+              <tr>
+                <td>Bilingual Support</td>
+                <td class="highlight-col">Native Bahasa Indonesia & English</td>
+                <td>English only or poor machine translations</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div>
+          <a href="#" class="brand">
+            <img src="images/logo.png" alt="Nesty Logo" class="brand-icon">
+            <span class="brand-name">Nesty</span>
+          </a>
+          <p class="footer-brand-desc">
+            A calm, modern, and offline-first personal assistant for independent living. Little things, taken care of.
+          </p>
+        </div>
+
+        <div>
+          <div class="footer-col-title">Navigation</div>
+          <ul class="footer-nav-list">
+            <li><a href="#about" class="footer-nav-link">About</a></li>
+            <li><a href="#features" class="footer-nav-link">Core Features</a></li>
+            <li><a href="#showcase" class="footer-nav-link">Showcase</a></li>
+            <li><a href="#download" class="footer-nav-link">Download APK</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="footer-col-title">Documentation</div>
+          <ul class="footer-nav-list">
+            <li><a href="https://github.com/hyenavia/nesty/blob/main/CHANGELOG.md" class="footer-nav-link" target="_blank" rel="noopener">Changelog & Releases</a></li>
+            <li><a href="https://github.com/hyenavia/nesty/blob/main/README.md" class="footer-nav-link" target="_blank" rel="noopener">Developer Guide (README)</a></li>
+            <li><a href="https://github.com/hyenavia/nesty/releases" class="footer-nav-link" target="_blank" rel="noopener">GitHub Releases</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>Copyright &copy; 2026 <strong>Nesty</strong>. Licensed under the MIT License.</div>
+        <div>Crafted with care for calm independent living.</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="script.js"></script>
+</body>
+</html>
