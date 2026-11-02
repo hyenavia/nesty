@@ -36,10 +36,28 @@ class ReleaseEntry {
 class AppChangelog {
   static const List<ReleaseEntry> releases = [
     ReleaseEntry(
-      version: '0.9.0',
+      version: '0.10.0',
       dateEn: 'November 3, 2026',
       dateId: '3 November 2026',
       isCurrent: true,
+      changes: [
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Weekly Expense View: Switch seamlessly between monthly and weekly living expense views with custom 7-day ranges.',
+          textId: 'Tampilan Pengeluaran Mingguan: Beralih mudah antara mode bulanan dan mingguan dengan kalkulasi otomatis 7 hari.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Live Real-Time Stream Sync: Instant two-way synchronization via Firestore snapshot listeners across active devices without manual refresh.',
+          textId: 'Sinkronisasi Real-Time Live: Pembaruan dua arah instan via snapshot listener Firestore lintas perangkat tanpa perlu refresh manual.',
+        ),
+      ],
+    ),
+    ReleaseEntry(
+      version: '0.9.0',
+      dateEn: 'November 3, 2026',
+      dateId: '3 November 2026',
+      isCurrent: false,
       changes: [
         ChangeItem(
           type: ChangeType.added,

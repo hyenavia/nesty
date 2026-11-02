@@ -28,26 +28,35 @@ class MonthlyExpenseSheet extends StatefulWidget {
 }
 
 class _MonthlyExpenseSheetState extends State<MonthlyExpenseSheet> {
-  late DateTime _selectedMonth;
+  ExpensePeriodMode _mode = ExpensePeriodMode.monthly;
+  late DateTime _currentDate;
 
   @override
   void initState() {
     super.initState();
     final now = DateTime.now();
-    _selectedMonth = DateTime(now.year, now.month);
+    _currentDate = DateTime(now.year, now.month);
   }
 
-  void _prevMonth() {
+  void _prev() {
+    HapticFeedback.lightImpact();
     setState(() {
-      _selectedMonth =
-          DateTime(_selectedMonth.year, _selectedMonth.month - 1);
+      if (_mode == ExpensePeriodMode.monthly) {
+        _currentDate = DateTime(_currentDate.year, _currentDate.month - 1);
+      } else {
+        _currentDate = _currentDate.subtract(const Duration(days: 7));
+      }
     });
   }
 
-  void _nextMonth() {
+  void _next() {
+    HapticFeedback.lightImpact();
     setState(() {
-      _selectedMonth =
-          DateTime(_selectedMonth.year, _selectedMonth.month + 1);
+      if (_mode == ExpensePeriodMode.monthly) {
+        _currentDate = DateTime(_currentDate.year, _currentDate.month + 1);
+      } else {
+        _currentDate = _currentDate.add(const Duration(days: 7));
+      }
     });
   }
 
@@ -60,16 +69,24 @@ class _MonthlyExpenseSheetState extends State<MonthlyExpenseSheet> {
     final tokens = context.watch<TokenController>().purchases;
     final laundry = context.watch<LaundryController>().orders;
 
-    final summary = MonthlyExpenseCalculator.calculate(
-      year: _selectedMonth.year,
-      month: _selectedMonth.month,
-      bills: bills,
-      tokenPurchases: tokens,
-      laundryOrders: laundry,
-    );
+    final ExpenseSummary summary = _mode == ExpensePeriodMode.monthly
+        ? MonthlyExpenseCalculator.calculate(
+            year: _currentDate.year,
+            month: _currentDate.month,
+            bills: bills,
+            tokenPurchases: tokens,
+            laundryOrders: laundry,
+          )
+        : MonthlyExpenseCalculator.calculateWeekly(
+            weekStart: _currentDate,
+            bills: bills,
+            tokenPurchases: tokens,
+            laundryOrders: laundry,
+          );
 
-    final monthLabel =
-        DateFormat('MMMM yyyy', s.lang).format(_selectedMonth);
+    final periodLabel = _mode == ExpensePeriodMode.monthly
+        ? DateFormat('MMMM yyyy', s.lang).format(_currentDate)
+        : '${fmtDate(_currentDate, s.lang)} - ${fmtDate(_currentDate.add(const Duration(days: 6)), s.lang)}';
 
     return Container(
       decoration: BoxDecoration(
@@ -92,14 +109,51 @@ class _MonthlyExpenseSheetState extends State<MonthlyExpenseSheet> {
             ),
           ),
 
-          // Header with month switcher
+          // Period Mode Segmented Selector (Monthly vs Weekly)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: SegmentedButton<ExpensePeriodMode>(
+              style: SegmentedButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                selectedBackgroundColor: AppColors.peach.withValues(alpha: 0.7),
+                selectedForegroundColor: AppColors.brown,
+              ),
+              segments: [
+                ButtonSegment(
+                  value: ExpensePeriodMode.monthly,
+                  label: Text(s.t('period_monthly')),
+                  icon: const Icon(Icons.calendar_month_outlined, size: 16),
+                ),
+                ButtonSegment(
+                  value: ExpensePeriodMode.weekly,
+                  label: Text(s.t('period_weekly')),
+                  icon: const Icon(Icons.date_range_outlined, size: 16),
+                ),
+              ],
+              selected: {_mode},
+              onSelectionChanged: (set) {
+                HapticFeedback.lightImpact();
+                setState(() {
+                  _mode = set.first;
+                  final now = DateTime.now();
+                  _currentDate = _mode == ExpensePeriodMode.monthly
+                      ? DateTime(now.year, now.month)
+                      : MonthlyExpenseCalculator.startOfWeek(now);
+                });
+              },
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          // Navigation switcher (Prev / Next)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
                 IconButton(
                   icon: const Icon(Icons.chevron_left_rounded),
-                  onPressed: _prevMonth,
+                  onPressed: _prev,
                 ),
                 Expanded(
                   child: Column(
@@ -111,7 +165,7 @@ class _MonthlyExpenseSheetState extends State<MonthlyExpenseSheet> {
                         ),
                       ),
                       Text(
-                        monthLabel,
+                        periodLabel,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -121,7 +175,7 @@ class _MonthlyExpenseSheetState extends State<MonthlyExpenseSheet> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.chevron_right_rounded),
-                  onPressed: _nextMonth,
+                  onPressed: _next,
                 ),
               ],
             ),

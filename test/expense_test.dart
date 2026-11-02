@@ -89,5 +89,65 @@ void main() {
       expect(text, contains('Period: 2026-11'));
       expect(text, contains('Total: Rp 1785000'));
     });
+
+    test('calculates weekly expenses within week range correctly', () {
+      final bills = [
+        const Bill(
+          id: 'b1',
+          name: 'Kos',
+          amountRp: 1500000,
+          dayOfMonth: 1, // Sunday Nov 1
+          splitWays: 1,
+        ),
+        const Bill(
+          id: 'b2',
+          name: 'WiFi',
+          amountRp: 300000,
+          dayOfMonth: 4, // Wednesday Nov 4, in week!
+          splitWays: 2, // 150,000
+        ),
+      ];
+
+      final tokens = [
+        TokenPurchase(
+          at: DateTime(2026, 11, 5), // Thursday Nov 5, in week!
+          amountRp: 50000,
+          kwh: 32.5,
+        ),
+        TokenPurchase(
+          at: DateTime(2026, 11, 15), // next week, excluded
+          amountRp: 100000,
+          kwh: 65.0,
+        ),
+      ];
+
+      final laundry = [
+        LaundryOrder(
+          id: 'l1',
+          createdAt: DateTime(2026, 11, 3), // Tuesday Nov 3, in week!
+          shop: 'Klin Laundry',
+          costRp: 25000,
+        ),
+      ];
+
+      // Week starting Monday Nov 2, 2026
+      final weekStart = DateTime(2026, 11, 2);
+      final weekly = MonthlyExpenseCalculator.calculateWeekly(
+        weekStart: weekStart,
+        bills: bills,
+        tokenPurchases: tokens,
+        laundryOrders: laundry,
+      );
+
+      // Bills: 150,000 (WiFi)
+      expect(weekly.totalBillsRp, 150000);
+      // Tokens: 50,000
+      expect(weekly.totalTokensRp, 50000);
+      // Laundry: 25,000
+      expect(weekly.totalLaundryRp, 25000);
+      // Grand Total: 225,000
+      expect(weekly.grandTotalRp, 225000);
+      expect(weekly.items, hasLength(3));
+    });
   });
 }

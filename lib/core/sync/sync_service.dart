@@ -79,6 +79,7 @@ class SyncService extends ChangeNotifier {
   bool _applying = false; // true while we write remote/imported data locally
   String? _lastUid;
   Timer? _debounce;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _docSub;
 
   void _setState(SyncState s) {
     _state = s;
@@ -183,10 +184,56 @@ class SyncService extends ChangeNotifier {
     _lastUid = uid;
     if (uid != null) {
       _pullAndMerge();
+      _startLiveSubscription(uid);
     } else {
       _debounce?.cancel();
+      _docSub?.cancel();
       if (wasSignedIn) _resetLocal(); // never leak one account into another
       _setState(SyncState.idle);
+    }
+  }
+
+  void _startLiveSubscription(String uid) {
+    _docSub?.cancel();
+    try {
+      _docSub = _doc(uid).snapshots().listen((snap) {
+        if (_auth.uid != uid) return;
+        // Skip local cache echo writes
+        if (snap.metadata.hasPendingWrites) return;
+
+        final data = snap.data();
+        if (data == null) return;
+
+        final remoteTs = (data['updatedAt'] as num?)?.toInt() ?? 0;
+        if (remoteTs > _localUpdatedAt) {
+          debugPrint('[SyncService] Live snapshot received: remoteTs=$remoteTs > local=$_localUpdatedAt');
+          if (data['nickname'] != null || data['photo'] != null || data['nestCode'] != null) {
+            _profile.loadJson({
+              'nickname': data['nickname'],
+              'photo': data['photo'],
+              'nestCode': data['nestCode'],
+              'updatedAt': data['profileUpdatedAt'] ?? data['updatedAt'] ?? 0,
+            });
+          }
+
+          final rawPayload = data['payload'] as String?;
+          if (rawPayload != null && rawPayload.isNotEmpty) {
+            try {
+              _applyMap(jsonDecode(rawPayload) as Map<String, dynamic>);
+            } catch (e) {
+              debugPrint('[SyncService] Failed to apply live payload: $e');
+            }
+          }
+
+          _setLocalTs(remoteTs);
+          _setState(SyncState.synced);
+          _recordSyncSuccess();
+        }
+      }, onError: (e) {
+        debugPrint('[SyncService] Live snapshot error: $e');
+      });
+    } catch (e) {
+      debugPrint('[SyncService] Could not start live subscription: $e');
     }
   }
 
@@ -282,6 +329,7 @@ class SyncService extends ChangeNotifier {
             'email': _auth.email,
             'nickname': _profile.nickname,
             'photo': photoB64,
+            'nestCode': _profile.nestCode,
             'profileUpdatedAt': profileTs,
             'payload': jsonEncode(snapshot()),
           }, SetOptions(merge: true))
@@ -354,6 +402,7 @@ class SyncService extends ChangeNotifier {
   @override
   void dispose() {
     _debounce?.cancel();
+    _docSub?.cancel();
     _supplies.removeListener(_onLocalChange);
     _routines.removeListener(_onLocalChange);
     _token.removeListener(_onLocalChange);

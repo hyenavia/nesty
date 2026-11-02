@@ -316,7 +316,10 @@ class AppStrings {
     'bill_preset_phone': 'Phone',
     'notif_bill': "{name} is due soon. Don't forget to pay!",
     // Monthly Expense & Financial Pulse
-    'expense_overview': 'Monthly Expenses',
+    'expense_overview': 'Living Expenses',
+    'expense_period': 'Period',
+    'period_monthly': 'Monthly',
+    'period_weekly': 'Weekly',
     'expense_total': 'Total estimated expenses',
     'expense_bills': 'Recurring bills',
     'expense_tokens': 'Electricity tokens',
@@ -669,7 +672,10 @@ class AppStrings {
     'bill_preset_phone': 'Pulsa',
     'notif_bill': 'Tagihan {name} segera jatuh tempo. Jangan lupa bayar ya!',
     // Monthly Expense & Financial Pulse (ID)
-    'expense_overview': 'Pengeluaran Bulanan',
+    'expense_overview': 'Pengeluaran Hidup',
+    'expense_period': 'Periode',
+    'period_monthly': 'Bulanan',
+    'period_weekly': 'Mingguan',
     'expense_total': 'Total estimasi pengeluaran',
     'expense_bills': 'Tagihan rutin',
     'expense_tokens': 'Token listrik',

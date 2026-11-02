@@ -4,6 +4,20 @@ All notable changes to the **Nesty** - Little Things, Taken Care Of project will
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-11-03
+
+### Added
+- **Weekly Living Expense View & Period Mode Toggle (`ExpensePeriodMode`, `MonthlyExpenseSheet`)**:
+  - Added segmented mode switcher allowing users to toggle between **Monthly** and **Weekly** expense views.
+  - Weekly view calculates living expenses in exact 7-day windows (bills due in that week, token purchases, and laundry costs).
+  - Clean previous/next week navigation arrows and dynamic week date range preview.
+- **Live Real-Time Firestore Synchronization (`SyncService`)**:
+  - Integrated active Firestore snapshot stream listener (`_doc(uid).snapshots()`) for genuine live two-way sync across multiple devices.
+  - Changes made on one device are immediately delivered and reflected in real-time on all active paired devices without manual refresh.
+  - Implemented local cache echo suppression (`snap.metadata.hasPendingWrites`) to prevent redundant write loops.
+
+---
+
 ## [0.9.0] - 2026-11-03
 
 ### Added
