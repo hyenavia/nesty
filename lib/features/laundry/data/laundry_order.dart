@@ -7,6 +7,7 @@ class LaundryOrder {
     this.status = LaundryStatus.inBasket,
     this.shop,
     this.weightKg,
+    this.costRp,
     this.dueDate,
     this.photo,
     this.doneAt,
@@ -17,6 +18,7 @@ class LaundryOrder {
   final LaundryStatus status;
   final String? shop;
   final double? weightKg;
+  final int? costRp;
   final DateTime? dueDate; // promised completion date
   final String? photo; // receipt photo file name (local only)
   final DateTime? doneAt;
@@ -39,6 +41,7 @@ class LaundryOrder {
     LaundryStatus? status,
     String? shop,
     double? weightKg,
+    int? costRp,
     DateTime? dueDate,
     String? photo,
     DateTime? doneAt,
@@ -50,6 +53,7 @@ class LaundryOrder {
         status: status ?? this.status,
         shop: shop ?? this.shop,
         weightKg: weightKg ?? this.weightKg,
+        costRp: costRp ?? this.costRp,
         dueDate: dueDate ?? this.dueDate,
         photo: photo ?? this.photo,
         doneAt: clearDoneAt ? null : (doneAt ?? this.doneAt),
@@ -61,6 +65,7 @@ class LaundryOrder {
         'status': status.name,
         'shop': shop,
         'weightKg': weightKg,
+        'costRp': costRp,
         'dueDate': dueDate?.toIso8601String(),
         'photo': photo,
         'doneAt': doneAt?.toIso8601String(),
@@ -72,6 +77,7 @@ class LaundryOrder {
         status: LaundryStatus.values.byName(j['status'] as String),
         shop: j['shop'] as String?,
         weightKg: (j['weightKg'] as num?)?.toDouble(),
+        costRp: (j['costRp'] as num?)?.toInt(),
         dueDate:
             j['dueDate'] == null ? null : DateTime.parse(j['dueDate'] as String),
         photo: j['photo'] as String?,

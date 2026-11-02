@@ -58,3 +58,4 @@ void main() {
     expect(encoded.isNotEmpty, isTrue);
   });
 }
+

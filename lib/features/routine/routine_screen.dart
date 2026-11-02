@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
@@ -86,10 +87,15 @@ class RoutineScreen extends StatelessWidget {
                                 children: [
                                   Text(name, style: theme.textTheme.titleMedium),
                                   Text(
-                                    s.t('routine_every', {
-                                      'n': '${task.intervalDays}',
-                                      'unit': dayUnit(s, task.intervalDays),
-                                    }),
+                                    [
+                                      s.t('routine_every', {
+                                        'n': '${task.intervalDays}',
+                                        'unit': dayUnit(s, task.intervalDays),
+                                      }),
+                                      if (task.completedCount > 0)
+                                        s.t('routine_done_count',
+                                            {'n': '${task.completedCount}'}),
+                                    ].join(' · '),
                                     style: theme.textTheme.bodySmall?.copyWith(
                                         color: AppColors.brownSoft),
                                   ),
@@ -104,6 +110,7 @@ class RoutineScreen extends StatelessWidget {
                               iconSize: 30,
                               color: AppColors.safe,
                               onPressed: () {
+                                HapticFeedback.lightImpact();
                                 final previous = controller.markDone(task.id);
                                 ScaffoldMessenger.of(context)
                                   ..hideCurrentSnackBar()

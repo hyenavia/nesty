@@ -19,13 +19,21 @@ class ProfileController extends ChangeNotifier {
 
   String? _nickname;
   Uint8List? _photo;
+  String? _nestCode;
 
   String? get nickname => _nickname;
   Uint8List? get photo => _photo;
+  String? get nestCode => _nestCode;
 
   String _nickKey(String uid) => 'nickname_$uid';
   String _photoKey(String uid) => 'photo_$uid';
+  String _nestKey(String uid) => 'nest_code_$uid';
   String _updatedKey(String uid) => 'profile_updated_$uid';
+
+  static String generateNestCode(String seed) {
+    final hash = seed.hashCode.abs().toString().padLeft(4, '0');
+    return 'NST-${hash.substring(hash.length - 4)}';
+  }
 
   String? get _uid => _auth.uid;
 
@@ -42,6 +50,8 @@ class ProfileController extends ChangeNotifier {
 
     if (uid == null) {
       _nickname = _prefs.getString('guest_nickname');
+      _nestCode =
+          _prefs.getString('guest_nest_code') ?? generateNestCode('guest');
       if (avatar == null) {
         // Fallback to legacy prefs and migrate to disk
         final b64 = _prefs.getString('guest_photo');
@@ -57,6 +67,7 @@ class ProfileController extends ChangeNotifier {
     }
 
     _nickname = _prefs.getString(_nickKey(uid));
+    _nestCode = _prefs.getString(_nestKey(uid)) ?? generateNestCode(uid);
     if (avatar == null) {
       // Fallback to legacy prefs and migrate to disk
       final b64 = _prefs.getString(_photoKey(uid));
@@ -76,12 +87,14 @@ class ProfileController extends ChangeNotifier {
   Map<String, dynamic> toJson() => {
         'nickname': _nickname,
         'photo': _photo != null ? base64Encode(_photo!) : null,
+        'nestCode': _nestCode,
         'updatedAt': _uid == null ? 0 : (_prefs.getInt(_updatedKey(_uid!)) ?? 0),
       };
 
   void loadJson(Map<String, dynamic> json) {
     final nick = json['nickname'] as String?;
     final photoB64 = json['photo'] as String?;
+    final nest = json['nestCode'] as String?;
     final updatedAt = (json['updatedAt'] as num?)?.toInt() ?? 0;
 
     final uid = _uid;
@@ -91,6 +104,9 @@ class ProfileController extends ChangeNotifier {
     // Update if remote is newer or local is uninitialized
     if (updatedAt >= localAt || _nickname == null) {
       _nickname = nick;
+      if (nest != null && nest.isNotEmpty) {
+        _nestCode = nest;
+      }
       if (photoB64 != null && photoB64.isNotEmpty) {
         _photo = base64Decode(photoB64);
         PhotoService.saveAvatar(avatarId, _photo!);
@@ -105,6 +121,9 @@ class ProfileController extends ChangeNotifier {
         } else {
           _prefs.remove(_nickKey(uid));
         }
+        if (nest != null && nest.isNotEmpty) {
+          _prefs.setString(_nestKey(uid), nest);
+        }
         _prefs.remove(_photoKey(uid));
         _prefs.setInt(_updatedKey(uid), updatedAt);
       } else {
@@ -112,6 +131,9 @@ class ProfileController extends ChangeNotifier {
           _prefs.setString('guest_nickname', nick);
         } else {
           _prefs.remove('guest_nickname');
+        }
+        if (nest != null && nest.isNotEmpty) {
+          _prefs.setString('guest_nest_code', nest);
         }
         _prefs.remove('guest_photo');
       }
@@ -168,6 +190,21 @@ class ProfileController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setNestCode(String code) async {
+    final val = code.trim().toUpperCase();
+    if (val.isEmpty) return;
+    _nestCode = val;
+    final uid = _uid;
+    if (uid != null) {
+      await _prefs.setString(_nestKey(uid), val);
+      await _prefs.setInt(_updatedKey(uid), DateTime.now().millisecondsSinceEpoch);
+      uploadToCloud();
+    } else {
+      await _prefs.setString('guest_nest_code', val);
+    }
+    notifyListeners();
+  }
+
   DocumentReference<Map<String, dynamic>>? _metaDoc(String uid) =>
       FirebaseFirestore.instance.collection('users').doc(uid).collection('meta').doc('profile');
 
@@ -185,6 +222,7 @@ class ProfileController extends ChangeNotifier {
       await _userDoc(uid)?.set({
         'nickname': _nickname,
         'photo': photoB64,
+        'nestCode': _nestCode,
         'profileUpdatedAt': ts,
       }, SetOptions(merge: true)).timeout(_timeout);
     } catch (e) {
@@ -196,6 +234,7 @@ class ProfileController extends ChangeNotifier {
       await _metaDoc(uid)?.set({
         'nickname': _nickname,
         'photo': photoB64,
+        'nestCode': _nestCode,
         'updatedAt': ts,
       }, SetOptions(merge: true)).timeout(_timeout);
     } catch (e) {
@@ -211,13 +250,18 @@ class ProfileController extends ChangeNotifier {
     try {
       final snap = await _userDoc(uid)?.get().timeout(_timeout);
       final data = snap?.data();
-      if (data != null && (data.containsKey('nickname') || data.containsKey('photo'))) {
+      if (data != null && (data.containsKey('nickname') || data.containsKey('photo') || data.containsKey('nestCode'))) {
         final remoteAt = (data['profileUpdatedAt'] as num?)?.toInt() ?? (data['updatedAt'] as num?)?.toInt() ?? 0;
         final localAt = _prefs.getInt(_updatedKey(uid)) ?? 0;
         if (remoteAt > localAt || _nickname == null) {
           final rNick = data['nickname'] as String?;
           final rPhotoB64 = data['photo'] as String?;
+          final rNest = data['nestCode'] as String?;
           _nickname = rNick;
+          if (rNest != null && rNest.isNotEmpty) {
+            _nestCode = rNest;
+            await _prefs.setString(_nestKey(uid), rNest);
+          }
           if (rPhotoB64 != null && rPhotoB64.isNotEmpty) {
             _photo = base64Decode(rPhotoB64);
             await PhotoService.saveAvatar(uid, _photo!);

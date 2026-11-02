@@ -57,11 +57,14 @@ class LaundryScreen extends StatelessWidget {
               initialShop: o.shop ?? c.lastShop, initialPhoto: o.photo),
         );
         if (r == null) return;
-        c.dropOff(o.id,
-            shop: r.shop,
-            weightKg: r.weightKg,
-            dueDate: r.dueDate,
-            photo: r.photo);
+        c.dropOff(
+          o.id,
+          shop: r.shop,
+          weightKg: r.weightKg,
+          costRp: r.costRp,
+          dueDate: r.dueDate,
+          photo: r.photo,
+        );
         next = LaundryStatus.droppedOff;
       case LaundryStatus.droppedOff:
         c.setStatus(o.id, LaundryStatus.ready);
@@ -153,6 +156,8 @@ class LaundryScreen extends StatelessWidget {
                                       if (o.weightKg != null)
                                         s.t('laundry_kg',
                                             {'kg': fmtKg(o.weightKg!, s.lang)}),
+                                      if (o.costRp != null)
+                                        'Rp ${fmtMoney(o.costRp!, s.lang)}',
                                     ].join(' · '),
                                     style: theme.textTheme.bodySmall?.copyWith(
                                         color: AppColors.brownSoft),
@@ -245,6 +250,8 @@ class LaundryScreen extends StatelessWidget {
                         fmtDate(o.doneAt ?? o.createdAt, s.lang),
                         if (o.weightKg != null)
                           s.t('laundry_kg', {'kg': fmtKg(o.weightKg!, s.lang)}),
+                        if (o.costRp != null)
+                          'Rp ${fmtMoney(o.costRp!, s.lang)}',
                       ].join(' · ')),
                       trailing: o.photo == null
                           ? null

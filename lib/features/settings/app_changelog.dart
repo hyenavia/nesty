@@ -36,10 +36,38 @@ class ReleaseEntry {
 class AppChangelog {
   static const List<ReleaseEntry> releases = [
     ReleaseEntry(
-      version: '0.8.0',
+      version: '0.9.0',
       dateEn: 'November 3, 2026',
       dateId: '3 November 2026',
       isCurrent: true,
+      changes: [
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Monthly Living Expense Overview & CSV Export: Complete financial pulse aggregating recurring bills, electricity token purchases, and laundry costs with CSV export and summary sharing.',
+          textId: 'Ringkasan Pengeluaran Bulanan & Ekspor CSV: Fitur evaluasi finansial menyeluruh yang menghitung tagihan rutin, token listrik, dan laundry dengan opsi ekspor CSV.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Routine Completion History & Streak Insights: Track habit consistency with timestamped completion history and total counts for each cleaning routine.',
+          textId: 'Riwayat Penyelesaian Rutinitas: Pantau konsistensi kebiasaan bersih-bersih dengan riwayat waktu dan total penyelesaian pada tiap rutinitas.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Shared Nest Code (House ID): Unique household code generated in user profile, preparing Nesty for multi-roommate & family live synchronization.',
+          textId: 'Kode Rumah Bersama (Nest Code): Kode identitas rumah unik di profil pengguna untuk persiapan sinkronisasi data antar teman kos & keluarga.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Tactile Haptic Feedback: Satisfying haptic micro-interactions when checking off routines, replacing water gallons, and paying bills.',
+          textId: 'Umpan Balik Haptik Taktil: Respon getaran mikro yang nyaman saat menandai rutinitas selesai, ganti galon, dan bayar tagihan.',
+        ),
+      ],
+    ),
+    ReleaseEntry(
+      version: '0.8.0',
+      dateEn: 'November 3, 2026',
+      dateId: '3 November 2026',
+      isCurrent: false,
       changes: [
         ChangeItem(
           type: ChangeType.added,

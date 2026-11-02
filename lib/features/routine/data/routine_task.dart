@@ -6,6 +6,7 @@ class RoutineTask {
     required this.intervalDays,
     required this.createdAt,
     this.lastDone,
+    this.history = const [],
   });
 
   final String id;
@@ -14,6 +15,10 @@ class RoutineTask {
   final int intervalDays;
   final DateTime createdAt;
   final DateTime? lastDone;
+  final List<DateTime> history;
+
+  int get completedCount =>
+      history.isNotEmpty ? history.length : (lastDone != null ? 1 : 0);
 
   String displayName(String lang) =>
       (lang == 'id' && nameId != null) ? nameId! : name;
@@ -31,7 +36,11 @@ class RoutineTask {
     return (dueDate.difference(today).inHours / 24).round();
   }
 
-  RoutineTask copyWith({DateTime? lastDone, bool clearLastDone = false}) =>
+  RoutineTask copyWith({
+    DateTime? lastDone,
+    bool clearLastDone = false,
+    List<DateTime>? history,
+  }) =>
       RoutineTask(
         id: id,
         name: name,
@@ -39,6 +48,7 @@ class RoutineTask {
         intervalDays: intervalDays,
         createdAt: createdAt,
         lastDone: clearLastDone ? null : (lastDone ?? this.lastDone),
+        history: history ?? this.history,
       );
 
   Map<String, dynamic> toJson() => {
@@ -48,6 +58,7 @@ class RoutineTask {
         'intervalDays': intervalDays,
         'createdAt': createdAt.toIso8601String(),
         'lastDone': lastDone?.toIso8601String(),
+        'history': history.map((e) => e.toIso8601String()).toList(),
       };
 
   factory RoutineTask.fromJson(Map<String, dynamic> j) => RoutineTask(
@@ -59,5 +70,11 @@ class RoutineTask {
         lastDone: j['lastDone'] == null
             ? null
             : DateTime.parse(j['lastDone'] as String),
+        history: (j['history'] as List<dynamic>?)
+                ?.map((e) => DateTime.parse(e as String))
+                .toList() ??
+            (j['lastDone'] != null
+                ? [DateTime.parse(j['lastDone'] as String)]
+                : const []),
       );
 }

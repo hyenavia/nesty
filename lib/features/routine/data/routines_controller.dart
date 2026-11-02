@@ -67,8 +67,16 @@ class RoutinesController extends ChangeNotifier {
   DateTime? markDone(String id) {
     final i = _items.indexWhere((e) => e.id == id);
     if (i == -1) return null;
+    final now = DateTime.now();
     final previous = _items[i].lastDone;
-    _items[i] = _items[i].copyWith(lastDone: DateTime.now());
+    final updatedHistory = [now, ..._items[i].history];
+    if (updatedHistory.length > 10) {
+      updatedHistory.removeRange(10, updatedHistory.length);
+    }
+    _items[i] = _items[i].copyWith(
+      lastDone: now,
+      history: updatedHistory,
+    );
     notifyListeners();
     _save();
     return previous;
@@ -78,7 +86,7 @@ class RoutinesController extends ChangeNotifier {
     final i = _items.indexWhere((e) => e.id == id);
     if (i == -1) return;
     _items[i] = value == null
-        ? _items[i].copyWith(clearLastDone: true)
+        ? _items[i].copyWith(clearLastDone: true, history: [])
         : _items[i].copyWith(lastDone: value);
     notifyListeners();
     _save();

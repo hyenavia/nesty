@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
@@ -75,6 +76,7 @@ class GallonScreen extends StatelessWidget {
           // ---- The one-tap button
           FilledButton.icon(
             onPressed: () {
+              HapticFeedback.lightImpact();
               final c = context.read<GallonController>();
               final added = DateTime.now();
               c.newGallon(added);

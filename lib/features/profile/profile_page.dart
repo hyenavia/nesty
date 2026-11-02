@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/widgets/user_avatar.dart';
 import '../auth/auth_controller.dart';
 import 'profile_controller.dart';
@@ -233,6 +235,75 @@ class _ProfilePageState extends State<ProfilePage> {
                   Text(
                     s.t('username_immutable'),
                     style: theme.textTheme.bodySmall?.copyWith(color: muted),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            elevation: 0,
+            color: AppColors.peach.withValues(alpha: 0.35),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                color: AppColors.peachDeep.withValues(alpha: 0.2),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.home_outlined,
+                        color: AppColors.brown, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.t('nest_code'),
+                          style: theme.textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          profile.nestCode ?? 'NST-HOME',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontFamily: 'monospace',
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.2,
+                            color: AppColors.brown,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          s.t('nest_code_desc'),
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: AppColors.brownSoft),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.copy_rounded, color: AppColors.brown),
+                    tooltip: s.t('nest_code_copied'),
+                    onPressed: () async {
+                      HapticFeedback.lightImpact();
+                      final code = profile.nestCode ?? 'NST-HOME';
+                      await Clipboard.setData(ClipboardData(text: code));
+                      if (context.mounted) {
+                        _toast(s.t('nest_code_copied'));
+                      }
+                    },
                   ),
                 ],
               ),

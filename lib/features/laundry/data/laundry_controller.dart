@@ -101,6 +101,7 @@ class LaundryController extends ChangeNotifier {
     String id, {
     String? shop,
     double? weightKg,
+    int? costRp,
     required DateTime dueDate,
     String? photo,
   }) =>
@@ -110,6 +111,7 @@ class LaundryController extends ChangeNotifier {
           status: LaundryStatus.droppedOff,
           shop: shop,
           weightKg: weightKg,
+          costRp: costRp,
           dueDate: dueDate,
           photo: photo,
         ),

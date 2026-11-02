@@ -6,9 +6,16 @@ import '../../../core/utils/format.dart';
 import 'photo_actions.dart';
 
 class DropOffResult {
-  const DropOffResult({this.shop, this.weightKg, required this.dueDate, this.photo});
+  const DropOffResult({
+    this.shop,
+    this.weightKg,
+    this.costRp,
+    required this.dueDate,
+    this.photo,
+  });
   final String? shop;
   final double? weightKg;
+  final int? costRp;
   final DateTime dueDate;
   final String? photo;
 }
@@ -28,6 +35,7 @@ class _DropOffDialogState extends State<DropOffDialog> {
   final _formKey = GlobalKey<FormState>();
   late final _shop = TextEditingController(text: widget.initialShop ?? '');
   final _weight = TextEditingController();
+  final _cost = TextEditingController();
   late DateTime _due = widget.initialDue ??
       DateTime.now().add(const Duration(days: 2)); // typical kiloan turnaround
   late String? _photo = widget.initialPhoto;
@@ -36,6 +44,7 @@ class _DropOffDialogState extends State<DropOffDialog> {
   void dispose() {
     _shop.dispose();
     _weight.dispose();
+    _cost.dispose();
     super.dispose();
   }
 
@@ -53,11 +62,13 @@ class _DropOffDialogState extends State<DropOffDialog> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     final w = double.tryParse(_weight.text.trim().replaceAll(',', '.'));
+    final c = int.tryParse(_cost.text.trim());
     Navigator.pop(
       context,
       DropOffResult(
         shop: _shop.text.trim().isEmpty ? null : _shop.text.trim(),
         weightKg: w,
+        costRp: c,
         dueDate: _due,
         photo: _photo,
       ),
@@ -94,6 +105,13 @@ class _DropOffDialogState extends State<DropOffDialog> {
                   final n = double.tryParse(v!.trim().replaceAll(',', '.'));
                   return (n == null || n <= 0) ? s.t('invalid_number') : null;
                 },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _cost,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: InputDecoration(labelText: s.t('laundry_cost')),
               ),
               const SizedBox(height: 12),
               OutlinedButton.icon(

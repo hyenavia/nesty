@@ -4,6 +4,27 @@ All notable changes to the **Nesty** - Little Things, Taken Care Of project will
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-11-03
+
+### Added
+- **Monthly Living Expense Overview & CSV Export (`MonthlyExpenseCalculator`, `MonthlyExpenseSheet`)**:
+  - Automatically aggregates living expenses per month: Recurring Bills (accounting for split bill portion), Electricity Token purchases, and Laundry orders.
+  - Interactive monthly expense bottom sheet with month switcher, grand total card, and category breakdown badges.
+  - One-tap CSV export (`toCsv()`) and clean summary text copy (`toSummaryText()`) to clipboard for personal budgeting or roommate expense sharing.
+  - Quick-glance monthly expense banner and analytics action button on `BillsScreen`.
+- **Optional Laundry Cost Tracking (`LaundryOrder`, `DropOffDialog`, `LaundryScreen`)**:
+  - Added optional cost (Rp) input when dropping off laundry, enabling accurate monthly laundry cost tracking.
+- **Routine Completion History & Streak Insights (`RoutineTask`, `RoutinesController`, `RoutineScreen`)**:
+  - Automatically records timestamped completion history (capped at 10 to keep storage minimal) and shows total completed count on each routine card.
+- **Shared Nest Code Preparation (`ProfileController`, `ProfilePage`)**:
+  - Added unique Nest Code (House ID) in user profile with one-tap clipboard copy, laying the groundwork for shared roommate and family data synchronization.
+- **Tactile Haptic Feedback Micro-interactions**:
+  - Added subtle, satisfying haptic feedback (`HapticFeedback.lightImpact()`) when completing routines, replacing water gallons, and paying bills.
+- **Expanded Automated Unit Test Suite (`test/`)**:
+  - Unit tests expanded to 22 tests, including `test/expense_test.dart` and `test/routines_test.dart`.
+
+---
+
 ## [0.8.0] - 2026-11-03
 
 ### Added

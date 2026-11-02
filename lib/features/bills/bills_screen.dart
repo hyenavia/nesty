@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
@@ -7,6 +8,7 @@ import '../../core/utils/format.dart';
 import '../routine/widgets/due_pill.dart';
 import 'data/bills_controller.dart';
 import 'widgets/add_bill_dialog.dart';
+import 'widgets/monthly_expense_sheet.dart';
 
 class BillsScreen extends StatelessWidget {
   const BillsScreen({super.key});
@@ -29,7 +31,16 @@ class BillsScreen extends StatelessWidget {
     final bills = c.sorted;
 
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('mod_bills'))),
+      appBar: AppBar(
+        title: Text(s.t('mod_bills')),
+        actions: [
+          IconButton(
+            tooltip: s.t('expense_overview'),
+            icon: const Icon(Icons.analytics_outlined),
+            onPressed: () => MonthlyExpenseSheet.show(context),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         tooltip: s.t('bill_add'),
         onPressed: () => showDialog<void>(
@@ -53,10 +64,57 @@ class BillsScreen extends StatelessWidget {
             )
           : ListView.separated(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
-              itemCount: bills.length,
+              itemCount: bills.length + 1,
               separatorBuilder: (_, _) => const SizedBox(height: 10),
               itemBuilder: (context, i) {
-                final b = bills[i];
+                if (i == 0) {
+                  return Card(
+                    elevation: 0,
+                    color: AppColors.peach.withValues(alpha: 0.35),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: AppColors.peachDeep.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () => MonthlyExpenseSheet.show(context),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.account_balance_wallet_outlined,
+                                color: AppColors.brown, size: 22),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    s.t('expense_overview'),
+                                    style: theme.textTheme.titleSmall
+                                        ?.copyWith(fontWeight: FontWeight.w700),
+                                  ),
+                                  Text(
+                                    s.t('expense_total'),
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: AppColors.brownSoft,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward_ios_rounded,
+                                size: 14, color: AppColors.brownSoft),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                final b = bills[i - 1];
                 return Dismissible(
                   key: ValueKey(b.id),
                   direction: DismissDirection.endToStart,
@@ -125,6 +183,7 @@ class BillsScreen extends StatelessWidget {
                           ),
                           FilledButton(
                             onPressed: () {
+                              HapticFeedback.lightImpact();
                               final before = c.markPaid(b.id);
                               if (before != null) {
                                 _snack(
