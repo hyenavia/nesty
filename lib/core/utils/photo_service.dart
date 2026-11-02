@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
 
 /// Receipt photos and user avatars live in the app's documents folder.
 /// This prevents heavy binary / Base64 data from bloating SharedPreferences.
@@ -81,7 +82,7 @@ class PhotoService {
       final x = await _picker.pickImage(
           source: source, maxWidth: 1600, imageQuality: 80);
       if (x == null) return null;
-      final name = '${DateTime.now().microsecondsSinceEpoch}.jpg';
+      final name = '${const Uuid().v4()}.jpg';
       if (_dir != null) {
         await File(x.path).copy('$_dir/$name');
       }

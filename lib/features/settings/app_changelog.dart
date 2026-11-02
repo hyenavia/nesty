@@ -36,10 +36,28 @@ class ReleaseEntry {
 class AppChangelog {
   static const List<ReleaseEntry> releases = [
     ReleaseEntry(
-      version: '0.11.0',
+      version: '0.11.1',
       dateEn: 'November 3, 2026',
       dateId: '3 November 2026',
       isCurrent: true,
+      changes: [
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Automated Flutter Widget Tests: Added UI widget test suite validating HomeScreen, RoutineScreen, and BillsScreen interactions.',
+          textId: 'Uji Widget Otomatis: Menambahkan rangkaian pengujian UI widget untuk memastikan tampilan dan interaksi layar berjalan sempurna.',
+        ),
+        ChangeItem(
+          type: ChangeType.fixed,
+          textEn: 'Collision-Resistant UUIDs: Replaced microsecond timestamps with cryptographic UUID v4 for rock-solid record uniqueness across all modules.',
+          textId: 'Identitas Unik Kriptografis (UUID): Mengganti ID berbasis mikrodetik dengan UUID v4 untuk mencegah tabrakan data saat sinkronisasi cloud.',
+        ),
+      ],
+    ),
+    ReleaseEntry(
+      version: '0.11.0',
+      dateEn: 'November 3, 2026',
+      dateId: '3 November 2026',
+      isCurrent: false,
       changes: [
         ChangeItem(
           type: ChangeType.added,

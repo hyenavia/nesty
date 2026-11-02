@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 import 'laundry_order.dart';
 
@@ -84,7 +85,7 @@ class LaundryController extends ChangeNotifier {
 
   LaundryOrder addToBasket() {
     final order = LaundryOrder(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: const Uuid().v4(),
       createdAt: DateTime.now(),
     );
     _orders.add(order);

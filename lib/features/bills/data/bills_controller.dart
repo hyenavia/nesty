@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 import 'bill.dart';
 
@@ -58,7 +59,7 @@ class BillsController extends ChangeNotifier {
     int splitWays = 1,
   }) {
     _items.add(Bill(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: const Uuid().v4(),
       name: name,
       amountRp: amountRp,
       dayOfMonth: dayOfMonth,

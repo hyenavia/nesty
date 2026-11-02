@@ -4,6 +4,19 @@ All notable changes to the **Nesty** - Little Things, Taken Care Of project will
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.1] - 2026-11-03
+
+### Added
+- **Automated Flutter Widget Test Suite (`test/widget_test.dart`)**:
+  - Expanded test suite from 23 to 26 automated tests by introducing UI widget tests.
+  - Verifies screen rendering and user interactions on `HomeScreen`, `RoutineScreen` (completion & undo SnackBars), and `BillsScreen` (split bill badges & payment settlement).
+
+### Fixed
+- **Collision-Resistant Cryptographic UUIDs (`uuid`)**:
+  - Replaced microsecond-based timestamps across `BillsController`, `LaundryController`, `RoutinesController`, `SuppliesController`, and `PhotoService` with UUID v4 (`const Uuid().v4()`), preventing potential ID collisions during cloud sync and bulk data operations.
+
+---
+
 ## [0.11.0] - 2026-11-03
 
 ### Added

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 import 'routine_task.dart';
 
@@ -94,7 +95,7 @@ class RoutinesController extends ChangeNotifier {
 
   void add(String name, int intervalDays) {
     _items.add(RoutineTask(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: const Uuid().v4(),
       name: name,
       intervalDays: intervalDays,
       createdAt: DateTime.now(),

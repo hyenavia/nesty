@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 import 'default_supplies.dart';
 import 'supply_item.dart';
@@ -111,7 +112,7 @@ class SuppliesController extends ChangeNotifier {
     int? quantity,
   }) {
     _items.add(SupplyItem(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: const Uuid().v4(),
       name: name,
       category: category,
       status: quantity == 0 ? SupplyStatus.out : status,
