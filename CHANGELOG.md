@@ -4,6 +4,29 @@ All notable changes to the **Nesty** - Little Things, Taken Care Of project will
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-11-03
+
+### Added
+- **Split Bill Calculation & Roommate Sharing (`BillsController`, `AddBillDialog`, `BillsScreen`)**:
+  - Added `splitWays` selector (1 to 10 persons) with dynamic live share calculation preview in `AddBillDialog`.
+  - Added cozy green split badge (`Split N (Rp X/person)`) to bill cards on `BillsScreen` when a bill is shared with roommates.
+  - Fully backward compatible `Bill` serialization with `splitWays` defaulting to 1 for legacy records.
+- **Automated Unit Test Suite (`test/`)**:
+  - Comprehensive unit test suite covering 18 automated tests across core domain logic:
+    - `test/token_test.dart`: kWh estimation, daily rate learning, days-left countdown, and serialization.
+    - `test/gallon_test.dart`: Gallon consumption learning, default days, intervals, and sorting.
+    - `test/bills_test.dart`: Due date calculation, overdue detection, mark paid cycle advancement, and split bill math.
+    - `test/sync_test.dart`: Full 6-module snapshot and profile JSON serialization.
+    - `test/profile_test.dart`: Disk avatar caching, memory cleanup, and migration from legacy SharedPreferences.
+
+### Changed
+- **Optimized Profile Photo Storage (`PhotoService`, `ProfileController`)**:
+  - User avatars are now persisted as local `.jpg` files in the app's documents directory (`/avatars/<uid>.jpg`) instead of large Base64 strings in `SharedPreferences`.
+  - Seamless automatic migration from legacy Base64 SharedPreferences on startup.
+  - Significantly reduces app memory footprint and Android XML storage churn while maintaining complete cloud synchronization compatibility.
+
+---
+
 ## [0.7.2] - 2026-10-31
 
 ### Fixed

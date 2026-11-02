@@ -49,12 +49,18 @@ class BillsController extends ChangeNotifier {
     _prefs.setString(_key, jsonEncode(toJson()));
   }
 
-  void add({required String name, int? amountRp, required int dayOfMonth}) {
+  void add({
+    required String name,
+    int? amountRp,
+    required int dayOfMonth,
+    int splitWays = 1,
+  }) {
     _items.add(Bill(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       name: name,
       amountRp: amountRp,
       dayOfMonth: dayOfMonth,
+      splitWays: splitWays,
     ));
     _changed();
   }

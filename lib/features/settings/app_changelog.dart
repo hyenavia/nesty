@@ -36,10 +36,33 @@ class ReleaseEntry {
 class AppChangelog {
   static const List<ReleaseEntry> releases = [
     ReleaseEntry(
+      version: '0.8.0',
+      dateEn: 'November 3, 2026',
+      dateId: '3 November 2026',
+      isCurrent: true,
+      changes: [
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Split Bill Calculation: Easily divide rent, internet, and utilities among roommates with live share preview and cozy badge indicators.',
+          textId: 'Kalkulasi Bagi Tagihan: Bagi sewa kos, WiFi, dan utilitas bersama teman sekamar secara otomatis lengkap dengan pratinjau nominal per orang.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Automated Unit Test Suite: 18 unit tests validating calculation engines for electricity tokens, water gallons, bills cycle, and sync logic.',
+          textId: 'Suite Pengujian Unit Otomatis: 18 tes unit memvalidasi engine prediksi token PLN, galon, siklus tagihan, dan sinkronisasi.',
+        ),
+        ChangeItem(
+          type: ChangeType.changed,
+          textEn: 'Disk Avatar Storage: Profile avatars are now saved directly as disk files, reducing app memory usage and eliminating XML SharedPreferences bloat.',
+          textId: 'Penyimpanan Foto Profil di Disk: Foto profil kini disimpan ke file disk lokal, menghemat memori dan meniadakan penumpukan Base64 di SharedPreferences.',
+        ),
+      ],
+    ),
+    ReleaseEntry(
       version: '0.7.2',
       dateEn: 'October 31, 2026',
       dateId: '31 Oktober 2026',
-      isCurrent: true,
+      isCurrent: false,
       changes: [
         ChangeItem(
           type: ChangeType.fixed,

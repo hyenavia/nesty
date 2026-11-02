@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/utils/photo_service.dart';
 import '../auth/auth_controller.dart';
 
 class ProfileController extends ChangeNotifier {
@@ -34,17 +35,38 @@ class ProfileController extends ChangeNotifier {
 
   void _loadProfile() {
     final uid = _uid;
+    final avatarId = uid ?? 'guest';
+
+    // 1. Try loading avatar from disk first
+    var avatar = PhotoService.loadAvatar(avatarId);
+
     if (uid == null) {
       _nickname = _prefs.getString('guest_nickname');
-      final b64 = _prefs.getString('guest_photo');
-      _photo = b64 != null ? base64Decode(b64) : null;
+      if (avatar == null) {
+        // Fallback to legacy prefs and migrate to disk
+        final b64 = _prefs.getString('guest_photo');
+        if (b64 != null) {
+          avatar = base64Decode(b64);
+          PhotoService.saveAvatar(avatarId, avatar);
+          _prefs.remove('guest_photo');
+        }
+      }
+      _photo = avatar;
       notifyListeners();
       return;
     }
 
     _nickname = _prefs.getString(_nickKey(uid));
-    final b64 = _prefs.getString(_photoKey(uid));
-    _photo = b64 != null ? base64Decode(b64) : null;
+    if (avatar == null) {
+      // Fallback to legacy prefs and migrate to disk
+      final b64 = _prefs.getString(_photoKey(uid));
+      if (b64 != null) {
+        avatar = base64Decode(b64);
+        PhotoService.saveAvatar(avatarId, avatar);
+        _prefs.remove(_photoKey(uid));
+      }
+    }
+    _photo = avatar;
     notifyListeners();
 
     // Check remote cloud profile in background
@@ -63,24 +85,35 @@ class ProfileController extends ChangeNotifier {
     final updatedAt = (json['updatedAt'] as num?)?.toInt() ?? 0;
 
     final uid = _uid;
+    final avatarId = uid ?? 'guest';
     final localAt = uid == null ? 0 : (_prefs.getInt(_updatedKey(uid)) ?? 0);
 
     // Update if remote is newer or local is uninitialized
     if (updatedAt >= localAt || _nickname == null) {
       _nickname = nick;
-      _photo = photoB64 != null ? base64Decode(photoB64) : null;
+      if (photoB64 != null && photoB64.isNotEmpty) {
+        _photo = base64Decode(photoB64);
+        PhotoService.saveAvatar(avatarId, _photo!);
+      } else if (json.containsKey('photo')) {
+        _photo = null;
+        PhotoService.deleteAvatar(avatarId);
+      }
+
       if (uid != null) {
         if (nick != null && nick.isNotEmpty) {
           _prefs.setString(_nickKey(uid), nick);
         } else {
           _prefs.remove(_nickKey(uid));
         }
-        if (photoB64 != null && photoB64.isNotEmpty) {
-          _prefs.setString(_photoKey(uid), photoB64);
-        } else {
-          _prefs.remove(_photoKey(uid));
-        }
+        _prefs.remove(_photoKey(uid));
         _prefs.setInt(_updatedKey(uid), updatedAt);
+      } else {
+        if (nick != null && nick.isNotEmpty) {
+          _prefs.setString('guest_nickname', nick);
+        } else {
+          _prefs.remove('guest_nickname');
+        }
+        _prefs.remove('guest_photo');
       }
       notifyListeners();
     }
@@ -118,19 +151,17 @@ class ProfileController extends ChangeNotifier {
   Future<void> setPhoto(Uint8List? bytes) async {
     _photo = bytes;
     final uid = _uid;
+    final avatarId = uid ?? 'guest';
 
-    if (uid == null) {
-      if (bytes == null) {
-        await _prefs.remove('guest_photo');
-      } else {
-        await _prefs.setString('guest_photo', base64Encode(bytes));
-      }
+    if (bytes == null) {
+      PhotoService.deleteAvatar(avatarId);
+      await _prefs.remove(uid == null ? 'guest_photo' : _photoKey(uid));
     } else {
-      if (bytes == null) {
-        await _prefs.remove(_photoKey(uid));
-      } else {
-        await _prefs.setString(_photoKey(uid), base64Encode(bytes));
-      }
+      await PhotoService.saveAvatar(avatarId, bytes);
+      await _prefs.remove(uid == null ? 'guest_photo' : _photoKey(uid));
+    }
+
+    if (uid != null) {
       await _prefs.setInt(_updatedKey(uid), DateTime.now().millisecondsSinceEpoch);
       uploadToCloud();
     }
@@ -187,13 +218,17 @@ class ProfileController extends ChangeNotifier {
           final rNick = data['nickname'] as String?;
           final rPhotoB64 = data['photo'] as String?;
           _nickname = rNick;
-          _photo = rPhotoB64 != null ? base64Decode(rPhotoB64) : null;
+          if (rPhotoB64 != null && rPhotoB64.isNotEmpty) {
+            _photo = base64Decode(rPhotoB64);
+            await PhotoService.saveAvatar(uid, _photo!);
+          } else if (data.containsKey('photo')) {
+            _photo = null;
+            PhotoService.deleteAvatar(uid);
+          }
           if (rNick != null) {
             await _prefs.setString(_nickKey(uid), rNick);
           }
-          if (rPhotoB64 != null) {
-            await _prefs.setString(_photoKey(uid), rPhotoB64);
-          }
+          await _prefs.remove(_photoKey(uid));
           await _prefs.setInt(_updatedKey(uid), remoteAt);
           notifyListeners();
           return;
@@ -219,7 +254,13 @@ class ProfileController extends ChangeNotifier {
       final rPhotoB64 = data['photo'] as String?;
 
       _nickname = rNick;
-      _photo = rPhotoB64 != null ? base64Decode(rPhotoB64) : null;
+      if (rPhotoB64 != null && rPhotoB64.isNotEmpty) {
+        _photo = base64Decode(rPhotoB64);
+        await PhotoService.saveAvatar(uid, _photo!);
+      } else if (data.containsKey('photo')) {
+        _photo = null;
+        PhotoService.deleteAvatar(uid);
+      }
 
       if (rNick != null) {
         await _prefs.setString(_nickKey(uid), rNick);
@@ -227,12 +268,7 @@ class ProfileController extends ChangeNotifier {
         await _prefs.remove(_nickKey(uid));
       }
 
-      if (rPhotoB64 != null) {
-        await _prefs.setString(_photoKey(uid), rPhotoB64);
-      } else {
-        await _prefs.remove(_photoKey(uid));
-      }
-
+      await _prefs.remove(_photoKey(uid));
       await _prefs.setInt(_updatedKey(uid), remoteAt);
       notifyListeners();
     } catch (e) {

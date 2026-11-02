@@ -6,6 +6,7 @@ class Bill {
     this.amountRp,
     required this.dayOfMonth,
     this.paidThrough,
+    this.splitWays = 1,
   });
 
   final String id;
@@ -13,6 +14,11 @@ class Bill {
   final int? amountRp;
   final int dayOfMonth; // 1..31 (short months use their last day)
   final String? paidThrough; // last paid cycle, "YYYY-MM"
+  final int splitWays; // 1 = pay full, 2 = split with 1 roommate, etc.
+
+  /// Returns user's portion when split with roommates.
+  int? get myShare =>
+      (amountRp != null && splitWays > 1) ? (amountRp! / splitWays).round() : amountRp;
 
   static String _key(int y, int m) => '$y-${m.toString().padLeft(2, '0')}';
 
@@ -52,12 +58,13 @@ class Bill {
     return (nextDue(n).difference(today).inHours / 24).round();
   }
 
-  Bill copyWith({String? paidThrough}) => Bill(
+  Bill copyWith({String? paidThrough, int? splitWays}) => Bill(
         id: id,
         name: name,
         amountRp: amountRp,
         dayOfMonth: dayOfMonth,
         paidThrough: paidThrough ?? this.paidThrough,
+        splitWays: splitWays ?? this.splitWays,
       );
 
   Map<String, dynamic> toJson() => {
@@ -66,6 +73,7 @@ class Bill {
         'amountRp': amountRp,
         'dayOfMonth': dayOfMonth,
         'paidThrough': paidThrough,
+        'splitWays': splitWays,
       };
 
   factory Bill.fromJson(Map<String, dynamic> j) => Bill(
@@ -74,5 +82,6 @@ class Bill {
         amountRp: (j['amountRp'] as num?)?.toInt(),
         dayOfMonth: (j['dayOfMonth'] as num).toInt().clamp(1, 31).toInt(),
         paidThrough: j['paidThrough'] as String?,
+        splitWays: (j['splitWays'] as num?)?.toInt() ?? 1,
       );
 }

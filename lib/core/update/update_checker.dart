@@ -72,7 +72,7 @@ class UpdateController extends ChangeNotifier {
 
 class UpdateCheckerService {
   /// Versi aplikasi saat ini. Selalu disinkronkan dengan pubspec.yaml.
-  static const currentVersion = '0.7.2';
+  static const currentVersion = '0.8.0';
 
   static const String _latestReleaseApi =
       'https://api.github.com/repos/hyenavia/nesty/releases/latest';

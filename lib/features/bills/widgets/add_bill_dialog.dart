@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/format.dart';
 import '../data/bills_controller.dart';
 
 class AddBillDialog extends StatefulWidget {
@@ -24,6 +26,7 @@ class _AddBillDialogState extends State<AddBillDialog> {
   final _name = TextEditingController();
   final _amount = TextEditingController();
   final _day = TextEditingController(text: '${DateTime.now().day}');
+  int _splitWays = 1;
 
   @override
   void dispose() {
@@ -39,6 +42,7 @@ class _AddBillDialogState extends State<AddBillDialog> {
           name: _name.text.trim(),
           amountRp: int.tryParse(_amount.text.trim()),
           dayOfMonth: int.parse(_day.text.trim()),
+          splitWays: _splitWays,
         );
     Navigator.pop(context);
   }
@@ -46,6 +50,8 @@ class _AddBillDialogState extends State<AddBillDialog> {
   @override
   Widget build(BuildContext context) {
     final s = context.s;
+    final parsedAmount = int.tryParse(_amount.text.trim());
+
     return AlertDialog(
       title: Text(s.t('bill_add')),
       content: SingleChildScrollView(
@@ -80,6 +86,59 @@ class _AddBillDialogState extends State<AddBillDialog> {
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: InputDecoration(labelText: s.t('bill_amount')),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.t('bill_split_ways', {'n': '$_splitWays'}),
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        if (_splitWays > 1 && parsedAmount != null)
+                          Text(
+                            s.t('bill_my_share', {
+                              'amount': fmtMoney(
+                                (parsedAmount / _splitWays).round(),
+                                s.lang,
+                              ),
+                            }),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: AppColors.mint,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  IconButton.outlined(
+                    icon: const Icon(Icons.remove, size: 18),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: _splitWays > 1
+                        ? () => setState(() => _splitWays--)
+                        : null,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '$_splitWays',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton.outlined(
+                    icon: const Icon(Icons.add, size: 18),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: _splitWays < 10
+                        ? () => setState(() => _splitWays++)
+                        : null,
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               TextFormField(

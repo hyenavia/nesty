@@ -105,6 +105,19 @@ class BillsScreen extends StatelessWidget {
                                   style: theme.textTheme.bodySmall
                                       ?.copyWith(color: AppColors.brownSoft),
                                 ),
+                                if (b.splitWays > 1 && b.myShare != null) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    s.t('bill_split_badge', {
+                                      'n': '${b.splitWays}',
+                                      'share': fmtMoney(b.myShare!, s.lang),
+                                    }),
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: AppColors.mint,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                                 const SizedBox(height: 6),
                                 DuePill(days: b.daysUntilDue()),
                               ],
