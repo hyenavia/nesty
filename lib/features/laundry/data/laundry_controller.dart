@@ -12,7 +12,9 @@ class LaundryController extends ChangeNotifier {
     if (raw != null) {
       try {
         _orders = parse(jsonDecode(raw) as List<dynamic>);
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[LaundryController] Failed to parse saved data: $e');
+      }
     }
   }
 

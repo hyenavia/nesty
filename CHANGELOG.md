@@ -4,6 +4,41 @@ All notable changes to the **Nesty** - Little Things, Taken Care Of project will
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-11-03
+
+### Added
+- **Redesigned Cozy Web Landing Page (`docs/`)**:
+  - Rebuilt the entire landing page based on the warm, storybook-inspired Nunito & Nunito Sans design specification.
+  - Integrated interactive CSS mobile phone stage featuring live utility status cards and tap-to-complete daily tasks.
+  - Unified Signature Theme: Warm cozy cream canvas harmoniously mixed with rich espresso typography, phone framing, and cozy peach accents, presenting a single cohesive brand identity.
+  - Highlighted full independent living feature suite: Electricity Token prediction, Gallon countdown, Laundry tracking, Daily Supplies, Recurring Bills, and Weekly/Monthly Living Expenses.
+  - Added dedicated persona cards ("Who is it for?"): Boarders (Anak Kos), Students, Young Workers, and Independent Souls.
+  - Direct APK download card linked to GitHub Releases with dynamic version detection via GitHub API.
+- **Brand-New 3D House Mascot & Cross-Platform Launcher Icons**:
+  - Updated all project icon assets across Android (adaptive & standard mipmaps), iOS, Web (PWA icons & favicon), and Windows desktop with the official 3D glossy winking house mascot.
+  - Synchronized in-app `BrandMark` and `MascotBadge` widgets.
+  - Regenerated native splash screens via `flutter_native_splash`.
+
+---
+
+## [0.10.1] - 2026-11-03
+
+### Fixed
+- **Firestore Security Rules Hardening (`firestore.rules`)**:
+  - Restricted `/usernames/{name}` writes so users can only create entries mapping to their own authenticated UID (`request.resource.data.uid == request.auth.uid`), and only edit or delete entries they own (`resource.data.uid == request.auth.uid`), eliminating potential username hijacking.
+- **Atomic Username Reservation Transactions (`AuthController`)**:
+  - Implemented Firestore Transactions (`runTransaction`) during `signUp()` and `updateUsername()` for atomic check-and-set operations, eliminating race conditions when multiple users sign up or change handles simultaneously.
+  - Added clean rollback handling for auth user creation if username reservation fails.
+- **Enhanced Error Diagnostics & Silent Catch Elimination**:
+  - Replaced silent `catch (_) {}` blocks across `AuthController`, `TokenController`, `BillsController`, `GallonController`, `LaundryController`, and `PhotoService` with contextual `debugPrint` statements for improved debugging and maintainability.
+
+### Changed
+- **Design Token Harmonization (`AppColors`)**:
+  - Added standardized module accent tokens (`water`, `waterDeep`, `lavender`, `lavenderDeep`) in `AppColors`.
+  - Replaced all remaining hardcoded hex colors across `HomeScreen`, `GallonScreen`, `LaundryScreen`, `RemindersScreen`, and `OnboardingScreen` with centralized design tokens.
+
+---
+
 ## [0.10.0] - 2026-11-03
 
 ### Added

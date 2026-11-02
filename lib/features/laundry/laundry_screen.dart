@@ -29,7 +29,7 @@ extension LaundryStatusUi on LaundryStatus {
 class LaundryScreen extends StatelessWidget {
   const LaundryScreen({super.key});
 
-  static const _purple = Color(0xFFA99BD6);
+  static const _purple = AppColors.lavender;
 
   void _snack(BuildContext context, String text, {VoidCallback? undo}) {
     final s = context.s;

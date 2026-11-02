@@ -11,7 +11,9 @@ class BillsController extends ChangeNotifier {
     if (raw != null) {
       try {
         _items = parse(jsonDecode(raw) as List<dynamic>);
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[BillsController] Failed to parse saved data: $e');
+      }
     }
   }
 

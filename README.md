@@ -1,7 +1,7 @@
 # Nesty 🏠✨
 > **Little Things, Taken Care Of.**
 
-[![Release](https://img.shields.io/badge/release-v0.10.0-orange.svg)](https://github.com/hyenavia/nesty/releases/latest)
+[![Release](https://img.shields.io/badge/release-v0.11.0-orange.svg)](https://github.com/hyenavia/nesty/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Flutter](https://img.shields.io/badge/Flutter-3.47+-blue.svg)](https://flutter.dev)
 

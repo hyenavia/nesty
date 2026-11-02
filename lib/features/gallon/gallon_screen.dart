@@ -30,7 +30,7 @@ class GallonScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF7FB5D6).withValues(alpha: 0.25),
+              color: AppColors.water.withValues(alpha: 0.25),
               borderRadius: BorderRadius.circular(24),
             ),
             child: Column(
@@ -39,7 +39,7 @@ class GallonScreen extends StatelessWidget {
                 Row(
                   children: [
                     const Icon(Icons.water_drop_rounded,
-                        size: 30, color: Color(0xFF4F93BC)),
+                        size: 30, color: AppColors.waterDeep),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -59,7 +59,7 @@ class GallonScreen extends StatelessWidget {
                       value: (day / c.avgDays).clamp(0.0, 1.0).toDouble(),
                       minHeight: 10,
                       backgroundColor: AppColors.surface,
-                      color: const Color(0xFF4F93BC),
+                      color: AppColors.waterDeep,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -169,7 +169,7 @@ class GallonScreen extends StatelessWidget {
                 child: Card(
                   child: ListTile(
                     leading: const Icon(Icons.water_drop_outlined,
-                        color: Color(0xFF4F93BC)),
+                        color: AppColors.waterDeep),
                     title: Text(fmtDate(start, s.lang),
                         style: const TextStyle(fontWeight: FontWeight.w700)),
                     subtitle: Text(() {

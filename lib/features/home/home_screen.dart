@@ -146,14 +146,14 @@ class HomeScreen extends StatelessWidget {
               ),
               _ModuleCard(
                 icon: Icons.water_drop_rounded,
-                color: const Color(0xFF7FB5D6),
+                color: AppColors.water,
                 title: s.t('mod_gallon'),
                 subtitle: gallonInfo,
                 onTap: () => open(const GallonScreen()),
               ),
               _ModuleCard(
                 icon: Icons.local_laundry_service_rounded,
-                color: const Color(0xFFA99BD6),
+                color: AppColors.lavender,
                 title: s.t('mod_laundry'),
                 subtitle: laundryInfo,
                 onTap: () => open(const LaundryScreen()),

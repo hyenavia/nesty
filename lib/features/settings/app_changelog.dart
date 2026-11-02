@@ -36,10 +36,51 @@ class ReleaseEntry {
 class AppChangelog {
   static const List<ReleaseEntry> releases = [
     ReleaseEntry(
-      version: '0.10.0',
+      version: '0.11.0',
       dateEn: 'November 3, 2026',
       dateId: '3 November 2026',
       isCurrent: true,
+      changes: [
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Brand-New Cozy Landing Page: Warm, responsive web portal with interactive mobile phone stage, unified signature espresso & peach aesthetic, and direct APK download.',
+          textId: 'Pembaruan Menyeluruh Landing Page: Tampilan web yang hangat dan responsif dengan mockup HP interaktif, estetika khas espresso & peach terpadu, dan tautan unduh APK.',
+        ),
+        ChangeItem(
+          type: ChangeType.added,
+          textEn: 'Refreshed 3D House Mascot & App Icons: Updated all application launcher icons and brand badges across Android, iOS, Web, and Windows.',
+          textId: 'Maskot Rumah 3D & Ikon Aplikasi Baru: Memperbarui seluruh ikon peluncur aplikasi di Android, iOS, Web, dan Windows dengan maskot 3D resmi.',
+        ),
+      ],
+    ),
+    ReleaseEntry(
+      version: '0.10.1',
+      dateEn: 'November 3, 2026',
+      dateId: '3 November 2026',
+      isCurrent: false,
+      changes: [
+        ChangeItem(
+          type: ChangeType.fixed,
+          textEn: 'Firestore Security Hardening: Enforce ownership checks on username reservations, preventing cross-user updates and account takeover risks.',
+          textId: 'Penguatan Keamanan Firestore: Menegakkan validasi kepemilikan UID pada reservasi username untuk mencegah pembajakan akun.',
+        ),
+        ChangeItem(
+          type: ChangeType.fixed,
+          textEn: 'Atomic Username Transactions: Integrated Firestore Transactions to prevent race conditions during sign-up and username changes.',
+          textId: 'Transaksi Username Atomik: Transaksi Firestore untuk mencegah perebutan username bersamaan saat pendaftaran atau penggantian nama akun.',
+        ),
+        ChangeItem(
+          type: ChangeType.changed,
+          textEn: 'Design Token Standardization: Replaced all inline hardcoded hex colors with centralized AppColors palette tokens.',
+          textId: 'Standarisasi Token Desain: Mengganti semua warna heksadesimal langsung dengan token palet AppColors terpusat.',
+        ),
+      ],
+    ),
+    ReleaseEntry(
+      version: '0.10.0',
+      dateEn: 'November 3, 2026',
+      dateId: '3 November 2026',
+      isCurrent: false,
       changes: [
         ChangeItem(
           type: ChangeType.added,

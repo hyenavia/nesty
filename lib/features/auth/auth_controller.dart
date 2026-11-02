@@ -80,7 +80,9 @@ class AuthController extends ChangeNotifier {
     if (user != null && (user.displayName == null || user.displayName != clean)) {
       try {
         await user.updateDisplayName(clean);
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[AuthController] updateDisplayName note: $e');
+      }
     }
     notifyListeners();
   }
@@ -103,11 +105,15 @@ class AuthController extends ChangeNotifier {
         await _prefs.setString(_usernameKey, _cachedUsername!);
         try {
           await user.updateDisplayName(_cachedUsername!);
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[AuthController] updateDisplayName note: $e');
+        }
         notifyListeners();
         return;
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AuthController] Load username from users doc: $e');
+    }
 
     // 3. Fallback: Search usernames collection for matching uid
     try {
@@ -124,12 +130,16 @@ class AuthController extends ChangeNotifier {
           await _prefs.setString(_usernameKey, _cachedUsername!);
           try {
             await user.updateDisplayName(_cachedUsername!);
-          } catch (_) {}
+          } catch (e) {
+            debugPrint('[AuthController] updateDisplayName note: $e');
+          }
           notifyListeners();
           return;
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AuthController] Load username from usernames collection: $e');
+    }
   }
 
   /// Resolve identifier (either email or username) to a valid email address.
@@ -144,9 +154,9 @@ class AuthController extends ChangeNotifier {
       if (resolved != null && resolved.isNotEmpty) {
         return resolved;
       }
-    } catch (_) {}
-
-    // Fallback: check legacy synthetic username domain for backwards compatibility
+    } catch (e) {
+      debugPrint('[AuthController] Username email lookup: $e');
+    }
     return '$id@users.nesty.app';
   }
 
@@ -168,49 +178,52 @@ class AuthController extends ChangeNotifier {
       throw const AuthFailure('weak-password');
     }
 
-    // Check if username is already taken
-    final uDoc = _usernameDoc(name);
+    // Create Firebase Auth account first
+    final UserCredential cred;
     try {
-      final snap = await uDoc.get().timeout(const Duration(seconds: 10));
-      if (snap.exists) {
-        throw const AuthFailure('username-taken');
-      }
-    } on AuthFailure {
-      rethrow;
-    } catch (_) {}
-
-    try {
-      final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: mail,
         password: password,
       );
-      final user = cred.user!;
-      final uid = user.uid;
+    } on FirebaseAuthException catch (e) {
+      throw AuthFailure(e.code);
+    }
+    final user = cred.user!;
+    final uid = user.uid;
 
-      // Reserve username and save user profile
-      try {
-        await uDoc.set({
+    // Atomically reserve username via transaction to prevent race conditions
+    final uDoc = _usernameDoc(name);
+    try {
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final snap = await tx.get(uDoc);
+        if (snap.exists) {
+          throw const AuthFailure('username-taken');
+        }
+        tx.set(uDoc, {
           'uid': uid,
           'email': mail,
           'username': name,
           'createdAt': FieldValue.serverTimestamp(),
         });
-        await FirebaseFirestore.instance.collection('users').doc(uid).set({
-          'username': name,
-          'email': mail,
-        }, SetOptions(merge: true));
-        await user.updateDisplayName(name);
-      } catch (e) {
-        debugPrint('[AuthController] Firestore reservation note: $e');
-      }
-
-      _cachedUsername = name;
-      await _prefs.setString(_usernameKey, name);
-      await _setGuest(false);
-      notifyListeners();
-    } on FirebaseAuthException catch (e) {
-      throw AuthFailure(e.code);
+        tx.set(
+          FirebaseFirestore.instance.collection('users').doc(uid),
+          {'username': name, 'email': mail},
+          SetOptions(merge: true),
+        );
+      }).timeout(const Duration(seconds: 10));
+      await user.updateDisplayName(name);
+    } on AuthFailure {
+      // Username taken — delete the just-created auth account
+      try { await user.delete(); } catch (_) {}
+      rethrow;
+    } catch (e) {
+      debugPrint('[AuthController] Firestore reservation note: $e');
     }
+
+    _cachedUsername = name;
+    await _prefs.setString(_usernameKey, name);
+    await _setGuest(false);
+    notifyListeners();
   }
 
   Future<void> signIn(String identifier, String password) async {
@@ -232,7 +245,9 @@ class AuthController extends ChangeNotifier {
         await _prefs.setString(_usernameKey, id);
         try {
           await user.updateDisplayName(id);
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[AuthController] updateDisplayName note: $e');
+        }
       } else {
         await _loadUsername(user);
       }
@@ -259,21 +274,28 @@ class AuthController extends ChangeNotifier {
     }
 
     final newDoc = _usernameDoc(cleanNew);
-    final snap = await newDoc.get().timeout(const Duration(seconds: 10));
-    if (snap.exists) {
-      final existingUid = snap.data()?['uid'];
-      if (existingUid != user.uid) {
-        throw const AuthFailure('username-taken');
-      }
-    }
 
-    // Save new username mapping
-    await newDoc.set({
-      'uid': user.uid,
-      'email': user.email ?? '',
-      'username': cleanNew,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    // Atomically check-and-set via transaction to prevent race conditions
+    await FirebaseFirestore.instance.runTransaction((tx) async {
+      final snap = await tx.get(newDoc);
+      if (snap.exists) {
+        final existingUid = snap.data()?['uid'];
+        if (existingUid != user.uid) {
+          throw const AuthFailure('username-taken');
+        }
+      }
+      tx.set(newDoc, {
+        'uid': user.uid,
+        'email': user.email ?? '',
+        'username': cleanNew,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      tx.set(
+        FirebaseFirestore.instance.collection('users').doc(user.uid),
+        {'username': cleanNew},
+        SetOptions(merge: true),
+      );
+    }).timeout(const Duration(seconds: 10));
 
     // Delete old mapping if different
     if (oldUsername != null &&
@@ -281,19 +303,16 @@ class AuthController extends ChangeNotifier {
         oldUsername.toLowerCase() != cleanNew.toLowerCase()) {
       try {
         await _usernameDoc(oldUsername).delete();
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[AuthController] Old username cleanup note: $e');
+      }
     }
-
-    // Update users/{uid} root document
-    try {
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'username': cleanNew,
-      }, SetOptions(merge: true));
-    } catch (_) {}
 
     try {
       await user.updateDisplayName(cleanNew);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AuthController] DisplayName update note: $e');
+    }
 
     _cachedUsername = cleanNew;
     await _prefs.setString(_usernameKey, cleanNew);
@@ -330,13 +349,17 @@ class AuthController extends ChangeNotifier {
     if (uName != null && uName.isNotEmpty) {
       try {
         await _usernameDoc(uName).delete().timeout(const Duration(seconds: 10));
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[AuthController] Username cleanup on delete: $e');
+      }
     }
 
     // Wipe user cloud document
     try {
       await FirebaseFirestore.instance.collection('users').doc(uid).delete().timeout(const Duration(seconds: 10));
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AuthController] User doc cleanup on delete: $e');
+    }
 
     // Delete user from Firebase Auth
     await user.delete();

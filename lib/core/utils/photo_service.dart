@@ -70,7 +70,9 @@ class PhotoService {
       if (f != null && f.existsSync()) {
         f.deleteSync();
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[PhotoService] Failed to delete avatar: $e');
+    }
   }
 
   /// Returns the saved file name, or null if cancelled / failed.
@@ -84,7 +86,8 @@ class PhotoService {
         await File(x.path).copy('$_dir/$name');
       }
       return name;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[PhotoService] Failed to pick/save image: $e');
       return null;
     }
   }

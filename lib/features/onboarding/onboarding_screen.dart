@@ -209,8 +209,8 @@ class _ArtTiles extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         children: [
           tile(Icons.lightbulb_rounded, AppColors.low),
-          tile(Icons.water_drop_rounded, const Color(0xFF4F93BC)),
-          tile(Icons.local_laundry_service_rounded, const Color(0xFF8E7FC4)),
+          tile(Icons.water_drop_rounded, AppColors.waterDeep),
+          tile(Icons.local_laundry_service_rounded, AppColors.lavenderDeep),
           tile(Icons.shopping_basket_rounded, AppColors.peachDeep),
         ],
       ),

@@ -107,7 +107,7 @@ class RemindersScreen extends StatelessWidget {
               child: Card(
                 child: ListTile(
                   leading: const Icon(Icons.local_laundry_service_rounded,
-                      color: Color(0xFFA99BD6)),
+                      color: AppColors.lavender),
                   title: Text(o.shop ?? s.t('rem_laundry'),
                       style: theme.textTheme.titleMedium),
                   trailing: (o.status == LaundryStatus.droppedOff &&
@@ -125,7 +125,7 @@ class RemindersScreen extends StatelessWidget {
               child: Card(
                 child: ListTile(
                   leading: const Icon(Icons.water_drop_rounded,
-                      color: Color(0xFF4F93BC)),
+                      color: AppColors.waterDeep),
                   title: Text(s.t('rem_gallon'),
                       style: theme.textTheme.titleMedium),
                   trailing: DuePill(days: gallonDays),

@@ -1,7 +1,7 @@
 name: nesty
 description: "Nesty - Little Things, Taken Care Of."
 publish_to: 'none'
-version: 0.10.0+11
+version: 0.11.0+13
 
 environment:
   sdk: ^3.10.0

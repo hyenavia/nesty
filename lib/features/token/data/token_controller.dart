@@ -18,7 +18,9 @@ class TokenController extends ChangeNotifier {
     if (raw != null) {
       try {
         _apply(parse(jsonDecode(raw) as Map<String, dynamic>));
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[TokenController] Failed to parse saved data: $e');
+      }
     }
   }
 

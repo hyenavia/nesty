@@ -19,4 +19,10 @@ class AppColors {
   static const safe = Color(0xFF6FBF8A);
   static const low = Color(0xFFF2B84B);
   static const out = Color(0xFFE5675D);
+
+  // Module accents
+  static const water = Color(0xFF7FB5D6);
+  static const waterDeep = Color(0xFF4F93BC);
+  static const lavender = Color(0xFFA99BD6);
+  static const lavenderDeep = Color(0xFF8E7FC4);
 }
