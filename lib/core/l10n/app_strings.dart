@@ -376,6 +376,8 @@ class AppStrings {
         'Username must be 3-20 characters: letters, numbers, "." or "_".',
     'Access denied. Check your Firestore rules.':
         'Access denied. Check your Firestore rules.',
+    'Too many attempts. Please try again later.':
+        'Too many attempts. Please try again later.',
     'Failed ({code}).':
         'Failed ({code}).',
     'Something went wrong: {error}':
@@ -798,6 +800,8 @@ class AppStrings {
         'Username harus 3-20 karakter: huruf, angka, "." atau "_".',
     'Access denied. Check your Firestore rules.':
         'Akses ditolak. Periksa aturan Firestore.',
+    'Too many attempts. Please try again later.':
+        'Terlalu banyak percobaan gagal. Silakan coba lagi nanti.',
     'Failed ({code}).':
         'Gagal ({code}).',
     'Something went wrong: {error}':

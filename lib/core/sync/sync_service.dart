@@ -326,7 +326,7 @@ class SyncService extends ChangeNotifier {
           .set({
             'updatedAt': _localUpdatedAt,
             'username': _auth.username,
-            'email': _auth.email,
+            'email': _auth.email?.trim().toLowerCase(),
             'nickname': _profile.nickname,
             'photo': photoB64,
             'nestCode': _profile.nestCode,

@@ -145,19 +145,22 @@ class AuthController extends ChangeNotifier {
   /// Resolve identifier (either email or username) to a valid email address.
   Future<String> _resolveEmail(String identifier) async {
     final id = identifier.trim();
-    if (id.contains('@')) return id;
+    if (id.contains('@')) return id.toLowerCase();
 
     // Lookup mapped email in Firestore 'usernames' collection
     try {
       final snap = await _usernameDoc(id).get().timeout(const Duration(seconds: 10));
       final resolved = snap.data()?['email'] as String?;
-      if (resolved != null && resolved.isNotEmpty) {
-        return resolved;
+      if (resolved != null && resolved.trim().isNotEmpty) {
+        return resolved.trim().toLowerCase();
       }
+    } on TimeoutException {
+      throw const AuthFailure('network-request-failed');
     } catch (e) {
       debugPrint('[AuthController] Username email lookup: $e');
     }
-    return '$id@users.nesty.app';
+    // Username not found in reservation mapping
+    throw const AuthFailure('invalid-credential');
   }
 
   Future<void> signUp({
@@ -166,7 +169,7 @@ class AuthController extends ChangeNotifier {
     required String password,
   }) async {
     final name = username.trim();
-    final mail = email.trim();
+    final mail = email.trim().toLowerCase();
 
     if (!isValidUsername(name)) {
       throw const AuthFailure('invalid-username');
@@ -315,7 +318,7 @@ class AuthController extends ChangeNotifier {
       final createdAt = snap.data()?['createdAt'] ?? FieldValue.serverTimestamp();
       tx.set(newDoc, {
         'uid': user.uid,
-        'email': user.email ?? '',
+        'email': (user.email ?? '').trim().toLowerCase(),
         'username': cleanNew,
         'createdAt': createdAt,
         'updatedAt': FieldValue.serverTimestamp(),

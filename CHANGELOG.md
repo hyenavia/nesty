@@ -4,6 +4,19 @@ All notable changes to the **Nesty** - Little Things, Taken Care Of project will
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.2] - 2026-11-03
+
+### Fixed
+- **Identifier Resolution & Fake Email Elimination (`AuthController._resolveEmail`)**:
+  - Eliminated legacy fake `@users.nesty.app` domain fallback for unresolved usernames.
+  - Aligned with Wall o' Pay standard: non-existent usernames now fail immediately with `invalid-credential` / `user-not-found` without causing misleading password-reset confirmations or extra failed Firebase Auth roundtrips.
+- **Strict Email Lowercase Normalization**:
+  - Enforced strict lowercase email normalization across `signUp`, `updateUsername`, and `SyncService` cloud push to guarantee exact case matches with Firebase Auth token claims in `firestore.rules`.
+- **Rate Limit Error Localization (`AuthScreen`)**:
+  - Added localized handling for Firebase Auth `too-many-requests` error code with clear instructions in both English and Indonesian.
+
+---
+
 ## [0.13.1] - 2026-11-03
 
 ### Fixed

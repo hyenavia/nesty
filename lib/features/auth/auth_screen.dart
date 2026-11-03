@@ -184,6 +184,8 @@ class _AuthScreenState extends State<AuthScreen> {
         return context.tr('Username must be 3-20 characters: letters, numbers, "." or "_".');
       case 'permission-denied':
         return context.tr('Access denied. Check your Firestore rules.');
+      case 'too-many-requests':
+        return context.tr('Too many attempts. Please try again later.');
       default:
         return context.tr('Failed ({code}).', {'code': code});
     }
