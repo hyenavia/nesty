@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'core/l10n/locale_controller.dart';
+import 'core/modules/module_controller.dart';
 import 'core/notifications/reminder_controller.dart';
 import 'core/sync/sync_service.dart';
 import 'core/update/update_checker.dart';
@@ -48,6 +49,7 @@ Future<void> main() async {
   }
 
   final locale = LocaleController(prefs);
+  final modules = ModuleController(prefs);
   final supplies = SuppliesController(prefs);
   final routines = RoutinesController(prefs);
   final token = TokenController(prefs);
@@ -87,6 +89,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: locale),
+        ChangeNotifierProvider.value(value: modules),
         ChangeNotifierProvider.value(value: supplies),
         ChangeNotifierProvider.value(value: routines),
         ChangeNotifierProvider.value(value: token),

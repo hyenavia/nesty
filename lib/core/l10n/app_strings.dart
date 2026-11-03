@@ -199,6 +199,8 @@ class AppStrings {
     'rem_denied': 'Notifications are blocked. Enable them in your phone settings.',
     'rem_none': 'Nothing coming up. Nice!',
     'notif_routine': 'Time to: {name}',
+    'notif_action_done': 'Mark Done',
+    'notif_weekly_digest': '✨ Ready for a calm week? Tap to check upcoming routines & supplies.',
     'rem_supplies': 'Supplies to buy',
     // Token + Gallon
     'days_left': '~{n} {unit} left',
@@ -380,6 +382,68 @@ class AppStrings {
         'Firebase is not connected',
     'Login and sign up need a Firebase project. Run "flutterfire configure" in the project, then restart the app.':
         'Login and sign up need a Firebase project. Run "flutterfire configure" in the project, then restart the app.',
+    // Onboarding Setup & Modules
+    'setup_title': 'What would you like Nesty to monitor?',
+    'setup_desc': 'Choose the essentials for your kost. Unused modules will be hidden, and you can re-enable them anytime in Settings.',
+    'setup_reminders_title': 'Enable Smart Reminders',
+    'setup_reminders_desc': 'Get heads-up alerts before your water, electricity, or supplies run out.',
+    'setup_finish_btn': 'Start Using Nesty',
+    'customize_modules': 'Customize Modules',
+    'customize_modules_sub': 'Show or hide modules based on your kost needs',
+    'module_token': 'Electricity Token',
+    'module_gallon': 'Water Gallon',
+    'module_laundry': 'Laundry',
+    'module_supplies': 'Kost Supplies',
+    'module_bills': 'Kost Bills',
+    // Getting Started
+    'getting_started_title': 'Getting Started',
+    'getting_started_sub': '{done} of {total} completed',
+    'step_token': 'Record your first electricity meter reading',
+    'step_gallon': 'Log your current water gallon',
+    'step_supplies': 'Check and review your essentials',
+    'step_reminder': 'Turn on smart reminders',
+    // Cloud Backup / Guest Banner
+    'guest_backup_title': 'Secure Your Kost Data',
+    'guest_backup_desc': 'Your data is saved on this device. Create an account to sync across devices and prevent data loss.',
+    'guest_backup_btn': 'Create Account / Login',
+    // Gesture & Screen Hints
+    'tip_gesture_supplies': 'Tip: Tap an item to change stock status (Safe, Low, Out). Swipe left to delete.',
+    'tip_dismiss': 'Got it',
+    'swipe_to_delete': 'Swipe left to remove',
+    // Quick Token Estimation
+    'token_quick_est_title': 'Instant Forecast Estimate',
+    'token_quick_est_desc': 'Want a forecast right away without waiting for two meter readings? Enter your typical spending & duration.',
+    'token_quick_est_btn': 'Quick Estimate',
+    'token_quick_spend': 'Typical purchase amount (Rp)',
+    'token_quick_days': 'How many days does it usually last?',
+    'token_estimated_badge': '(Initial estimate based on your habits)',
+    'token_calibrated_badge': '(Calibrated from meter readings)',
+    'reset_password': 'Reset Password',
+    'reset_password_desc': 'Enter your registered email or username to receive a password reset link.',
+    // Privacy & Data Deletion
+    'privacy_policy': 'Privacy Policy',
+    'privacy_policy_sub': 'Data safety, storage, & deletion rules',
+    'data_deletion_info': 'Account & Data Deletion',
+    'data_deletion_info_sub': 'Learn how to erase your data',
+    // Change Password
+    'change_password': 'Change Password',
+    'change_password_sub': 'Update your login password',
+    'current_password': 'Current Password',
+    'new_password': 'New Password',
+    'confirm_new_password': 'Confirm New Password',
+    'password_too_short': 'Password must be at least 6 characters',
+    'passwords_dont_match': 'Passwords do not match',
+    'password_updated': 'Password updated successfully',
+    'wrong_current_password': 'Current password is incorrect',
+    // Battery Optimization Guide
+    'battery_guide': 'Background & Battery Guide',
+    'battery_guide_sub': 'Ensure reminders arrive on time',
+    'battery_guide_title': 'Reliable Reminders on Android',
+    'battery_guide_desc': 'Certain phone brands (such as Xiaomi, Oppo, Vivo, Samsung) aggressively close background apps to save battery. To ensure Nesty reminder alarms ring right on time, please disable battery optimization or allow background activity for Nesty in your system settings.',
+    'battery_open_settings': 'Open App Settings',
+    // Weekly Digest
+    'rem_weekly_digest': 'Sunday Evening Digest',
+    'rem_weekly_digest_sub': 'Gentle overview of chores & upcoming needs',
   };
 
   static const _id = <String, String>{
@@ -555,6 +619,8 @@ class AppStrings {
     'rem_denied': 'Notifikasi diblokir. Aktifkan di pengaturan HP.',
     'rem_none': 'Belum ada yang mendesak. Mantap!',
     'notif_routine': 'Waktunya: {name}',
+    'notif_action_done': 'Selesai',
+    'notif_weekly_digest': '✨ Siap menyambut minggu baru? Ketuk untuk cek rutinitas & stok kosmu.',
     'rem_supplies': 'Stok yang perlu dibeli',
     // Token + Gallon (ID)
     'days_left': '~{n} {unit} lagi',
@@ -736,6 +802,68 @@ class AppStrings {
         'Firebase belum terhubung',
     'Login and sign up need a Firebase project. Run "flutterfire configure" in the project, then restart the app.':
         'Masuk dan daftar membutuhkan proyek Firebase. Jalankan "flutterfire configure" di proyek, lalu mulai ulang aplikasi.',
+    // Onboarding Setup & Modules
+    'setup_title': 'Apa yang mau Nesty bantu pantau?',
+    'setup_desc': 'Pilih kebutuhan sesuai kosmu. Modul yang tidak dipakai akan disembunyikan dan bisa diubah kapan saja di Pengaturan.',
+    'setup_reminders_title': 'Nyalakan Pengingat Cerdas',
+    'setup_reminders_desc': 'Dapatkan notifikasi sebelum galon habis, token menipis, atau tagihan jatuh tempo.',
+    'setup_finish_btn': 'Mulai Pakai Nesty',
+    'customize_modules': 'Sesuaikan Modul',
+    'customize_modules_sub': 'Tampilkan atau sembunyikan modul sesuai kebutuhan kosmu',
+    'module_token': 'Token Listrik',
+    'module_gallon': 'Air Galon',
+    'module_laundry': 'Laundry',
+    'module_supplies': 'Stok Kebutuhan',
+    'module_bills': 'Tagihan Kost',
+    // Getting Started
+    'getting_started_title': 'Langkah Awal',
+    'getting_started_sub': '{done} dari {total} selesai',
+    'step_token': 'Catat meteran listrik pertamamu',
+    'step_gallon': 'Catat galon yang sedang dipakai',
+    'step_supplies': 'Cek dan periksa stok kebutuhanmu',
+    'step_reminder': 'Aktifkan pengingat cerdas',
+    // Cloud Backup / Guest Banner
+    'guest_backup_title': 'Amankan Data Kosmu',
+    'guest_backup_desc': 'Data tersimpan di perangkat ini. Buat akun agar data tidak hilang saat ganti HP dan bisa disinkronkan.',
+    'guest_backup_btn': 'Buat Akun / Masuk',
+    // Gesture & Screen Hints
+    'tip_gesture_supplies': 'Tip: Ketuk barang untuk ubah status (Aman, Menipis, Habis). Geser ke kiri untuk menghapus.',
+    'tip_dismiss': 'Mengerti',
+    'swipe_to_delete': 'Geser ke kiri untuk menghapus',
+    // Quick Token Estimation
+    'token_quick_est_title': 'Estimasi Prediksi Cepat',
+    'token_quick_est_desc': 'Mau prediksi langsung tanpa menunggu 2 kali catat meteran? Masukkan nominal beli dan durasi biasanya.',
+    'token_quick_est_btn': 'Isi Estimasi Cepat',
+    'token_quick_spend': 'Berapa rupiah biasanya beli token?',
+    'token_quick_days': 'Berapa hari biasanya bertahan?',
+    'token_estimated_badge': '(Estimasi awal berdasarkan kebiasaanmu)',
+    'token_calibrated_badge': '(Dikalibrasi dari riwayat meteran)',
+    'reset_password': 'Atur Ulang Kata Sandi',
+    'reset_password_desc': 'Masukkan email atau username terdaftar untuk menerima tautan atur ulang kata sandi.',
+    // Privacy & Data Deletion
+    'privacy_policy': 'Kebijakan Privasi',
+    'privacy_policy_sub': 'Keamanan data, penyimpanan, & aturan privasi',
+    'data_deletion_info': 'Penghapusan Akun & Data',
+    'data_deletion_info_sub': 'Petunjuk cara menghapus akun dan data Anda',
+    // Change Password
+    'change_password': 'Ganti Kata Sandi',
+    'change_password_sub': 'Perbarui kata sandi akun Anda',
+    'current_password': 'Kata Sandi Saat Ini',
+    'new_password': 'Kata Sandi Baru',
+    'confirm_new_password': 'Konfirmasi Kata Sandi Baru',
+    'password_too_short': 'Kata sandi minimal 6 karakter',
+    'passwords_dont_match': 'Konfirmasi kata sandi tidak cocok',
+    'password_updated': 'Kata sandi berhasil diperbarui',
+    'wrong_current_password': 'Kata sandi saat ini tidak tepat',
+    // Battery Optimization Guide
+    'battery_guide': 'Panduan Baterai & Notifikasi',
+    'battery_guide_sub': 'Pastikan pengingat selalu tepat waktu',
+    'battery_guide_title': 'Notifikasi Andal di Android',
+    'battery_guide_desc': 'Beberapa merek HP (seperti Xiaomi, Oppo, Vivo, Samsung) membatasi aplikasi di latar belakang untuk hemat baterai. Agar pengingat Nesty selalu berdering tepat waktu, mohon matikan penghemat baterai atau izinkan aktivitas latar belakang untuk Nesty pada pengaturan sistem.',
+    'battery_open_settings': 'Buka Pengaturan Aplikasi',
+    // Weekly Digest
+    'rem_weekly_digest': 'Ringkasan Hari Minggu',
+    'rem_weekly_digest_sub': 'Rekap santai rutinitas dan kebutuhan minggu depan',
   };
 }
 

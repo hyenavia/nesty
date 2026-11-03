@@ -134,7 +134,17 @@ class GallonScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Text(s.t('history'), style: theme.textTheme.titleMedium),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(s.t('history'), style: theme.textTheme.titleMedium),
+              if (history.isNotEmpty)
+                Text(
+                  s.t('swipe_to_delete'),
+                  style: theme.textTheme.bodySmall?.copyWith(color: AppColors.brownSoft),
+                ),
+            ],
+          ),
           const SizedBox(height: 8),
           if (history.isEmpty) Text(s.t('history_empty')),
           for (final start in history)

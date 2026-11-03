@@ -90,6 +90,10 @@ class UpdateCheckerService {
       'https://github.com/hyenavia/nesty/releases/latest/download/Nesty.apk';
   static const String feedbackUrl =
       'https://github.com/hyenavia/nesty/issues';
+  static const String privacyPolicyUrl =
+      'https://hyenavia.github.io/nesty/privacy.html';
+  static const String dataDeletionUrl =
+      'https://hyenavia.github.io/nesty/privacy.html#deletion';
 
   static bool _isShowingDialog = false;
 

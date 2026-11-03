@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
@@ -5,10 +7,18 @@ import 'package:timezone/timezone.dart' as tz;
 
 /// One reminder: show [body] on [date] at the chosen reminder time.
 class ReminderItem {
-  const ReminderItem(this.key, this.date, this.body);
+  const ReminderItem(
+    this.key,
+    this.date,
+    this.body, {
+    this.actionLabel,
+    this.payload,
+  });
   final String key;
   final DateTime date;
   final String body;
+  final String? actionLabel;
+  final String? payload;
 }
 
 /// Local (on-device) notifications: no server needed, works offline.
@@ -17,6 +27,9 @@ class NotificationService {
   static final instance = NotificationService._();
 
   final _plugin = FlutterLocalNotificationsPlugin();
+  final _actionController = StreamController<String>.broadcast();
+  Stream<String> get onAction => _actionController.stream;
+
   bool _ready = false;
 
   Future<void> init() async {
@@ -37,6 +50,12 @@ class NotificationService {
           requestSoundPermission: false,
         ),
       ),
+      onDidReceiveNotificationResponse: (response) {
+        final payload = response.payload;
+        if (payload != null && payload.isNotEmpty) {
+          _actionController.add(payload);
+        }
+      },
     );
     _ready = true;
   }
@@ -80,14 +99,24 @@ class NotificationService {
         title: 'Nesty',
         body: it.body,
         scheduledDate: at,
-        notificationDetails: const NotificationDetails(
+        notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             'nesty_reminders',
             'Nesty reminders',
             channelDescription: 'Reminders for routines, gallon and token',
+            actions: it.actionLabel != null
+                ? [
+                    AndroidNotificationAction(
+                      'action_done',
+                      it.actionLabel!,
+                      showsUserInterface: true,
+                    ),
+                  ]
+                : null,
           ),
-          iOS: DarwinNotificationDetails(),
+          iOS: const DarwinNotificationDetails(),
         ),
+        payload: it.payload ?? it.key,
         // Inexact = no special "exact alarm" permission needed on Android.
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       );

@@ -4,6 +4,58 @@ All notable changes to the **Nesty** - Little Things, Taken Care Of project will
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] - 2026-11-03
+
+### Added
+- **Store Compliance & Privacy Policy (`docs/privacy.html`)**:
+  - Published comprehensive Privacy Policy and User Data Deletion documentation compliant with Google Play Data Safety and Apple App Store Review Guidelines.
+  - Added in-app Privacy Policy access under Settings > About & Support with direct browser opening.
+  - Documented dual deletion workflows: instant 1-tap deletion in-app and verified email request channel.
+- **In-App Change Password (`AuthController.changePassword`, `ProfilePage`)**:
+  - Added secure in-app password change modal with current password re-authentication, validation, and localized error feedback.
+- **Unified Signature Cozy Theme (`AppTheme.signature`)**:
+  - Unified the visual identity into a single signature theme (Warm Cream `#FFF7EC`, Soft Surfaces `#FFFCF7`, and Deep Espresso `#62504A` typography with Cozy Peach `#F2A07F` accents).
+  - Perfectly balanced for both bright daylight readability (crisp contrast) and dim room comfort (warm paper-like sepia tone without harsh blue light), removing unnecessary theme toggle complexity.
+- **Actionable Notification Buttons ("Mark Done")**:
+  - Added actionable response buttons directly on Android routine reminder notifications, allowing users to mark tasks as done with zero friction.
+- **Gentle Sunday Evening Digest (`ReminderController`)**:
+  - Introduced a calming weekly digest scheduled every Sunday evening to review the upcoming week's routines and essentials in peace.
+  - Added toggle preference under Smart Reminders.
+- **Android Battery Saver Guide**:
+  - Added guidance dialog in Smart Reminders helping users on aggressive OEM devices (Xiaomi, Oppo, Vivo, Samsung) configure battery saver exclusions to guarantee prompt alarms.
+
+---
+
+## [0.12.0] - 2026-11-03
+
+### Added
+- **Onboarding Setup Wizard & Modular Visibility (`ModuleController`)**:
+  - Introduced a streamlined final setup step in onboarding: *"What would you like Nesty to monitor?"*, allowing users to customize which modules (Electricity Token, Water Gallon, Laundry, Kost Supplies, Rent & Bills) appear on their home dashboard.
+  - Added module customization preferences in Settings (`ProfileScreen`) so users can re-enable or hide modules at any time.
+  - Enabled one-tap opt-in for Smart Reminders directly in the onboarding setup wizard.
+- **Home Getting Started Checklist**:
+  - Added an interactive progress checklist on the Home dashboard for new users (e.g. record first electricity meter reading, log current water gallon, review supplies, activate smart reminders).
+- **Cold-Start Instant Token Forecast (`TokenController`)**:
+  - Implemented instant electricity token predictions based on typical refill spend and duration (`setColdStartEstimate`), eliminating the initial waiting friction before two consecutive meter readings are recorded.
+  - Added an in-app "Quick Estimate" prompt dialog on `TokenScreen`.
+- **Gesture Affordance Hints & Visual Cues**:
+  - Added dismissible gesture tip banners in `SuppliesScreen` (*"Tip: Tap an item to change stock status. Swipe left to delete"*).
+  - Added subtle dropdown arrows on `StatusPill` indicating interactive status switching.
+  - Added swipe-to-delete indicator cues across `RoutineScreen`, `BillsScreen`, `GallonScreen`, `LaundryScreen`, and `TokenScreen`.
+- **Guest-First Cloud Backup Prompt**:
+  - Transitioned the app from a blocking upfront login screen to a friction-free guest-first launch. Users can start managing their room immediately without registration.
+  - Added a warm cloud backup reminder banner on Home once data is recorded, encouraging account creation to safeguard data without being intrusive.
+- **Dedicated Forgot Password Dialog (`AuthScreen`)**:
+  - Replaced the input-dependent password reset action with a clear pop-up dialog allowing users to enter their registered email or username directly.
+
+### Changed
+- **Device Language Auto-Detection (`LocaleController`)**:
+  - Automatically detects the user's device system locale on fresh installs (`PlatformDispatcher.instance.locale`), defaulting to Indonesian (`'id'`) on Indonesian devices rather than forcing English.
+- **Universal Starter Supplies Catalog (`defaultSupplies`)**:
+  - Streamlined the default supplies catalog from 19 broad items to 10 truly universal kost essentials, pre-setting Laundry Detergent to *Running Low* so new users immediately understand how the Stock and Shopping List workflow connects.
+
+---
+
 ## [0.11.2] - 2026-11-03
 
 ### Fixed

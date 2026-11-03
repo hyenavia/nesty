@@ -11,12 +11,13 @@ class NestyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = context.watch<LocaleController>().locale;
+    final locale = context.watch<LocaleController?>()?.locale ?? const Locale('en');
 
     return MaterialApp(
       title: 'Nesty',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
+      theme: AppTheme.signature,
+      themeMode: ThemeMode.light,
       locale: locale,
       supportedLocales: const [Locale('en'), Locale('id')],
       localizationsDelegates: const [

@@ -7,10 +7,12 @@ class AppTheme {
   AppTheme._();
 
   /// Plus Jakarta Sans for numbers / info, per the brand board.
-  static TextStyle numbers({double size = 16, FontWeight weight = FontWeight.w700}) =>
-      GoogleFonts.plusJakartaSans(fontSize: size, fontWeight: weight, color: AppColors.brown);
+  static TextStyle numbers({double size = 16, FontWeight weight = FontWeight.w700, Color? color}) =>
+      GoogleFonts.plusJakartaSans(fontSize: size, fontWeight: weight, color: color ?? AppColors.brown);
 
-  static ThemeData get light {
+  /// Unified signature theme: Cozy Warm Cream & Deep Espresso.
+  /// Designed to be comfortable and clear in both bright daylight and dim environments.
+  static ThemeData get signature {
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.peachDeep,
       brightness: Brightness.light,
@@ -144,4 +146,6 @@ class AppTheme {
       ),
     );
   }
+
+  static ThemeData get light => signature;
 }

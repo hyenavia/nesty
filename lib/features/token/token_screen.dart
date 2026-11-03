@@ -66,6 +66,61 @@ class TokenScreen extends StatelessWidget {
       ));
   }
 
+  Future<void> _openQuickEstimateDialog(BuildContext context) async {
+    final s = context.s;
+    final c = context.read<TokenController>();
+    final spendCtrl = TextEditingController(text: '100000');
+    final daysCtrl = TextEditingController(text: '14');
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.t('token_quick_est_title')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(s.t('token_quick_est_desc')),
+            const SizedBox(height: 14),
+            TextField(
+              controller: spendCtrl,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: s.t('token_quick_spend'),
+                prefixText: 'Rp ',
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: daysCtrl,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: s.t('token_quick_days'),
+                suffixText: s.lang == 'id' ? ' hari' : ' days',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(s.t('cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(s.t('save')),
+          ),
+        ],
+      ),
+    );
+
+    if (ok == true) {
+      final spend = int.tryParse(spendCtrl.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 100000;
+      final days = int.tryParse(daysCtrl.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 14;
+      c.setColdStartEstimate(typicalSpendRp: spend, typicalDays: days);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = context.s;
@@ -144,6 +199,16 @@ class TokenScreen extends StatelessWidget {
                 if (f.ratePerDay != null)
                   Text(s.t('token_rate',
                       {'kwh': fmtKwh(f.ratePerDay!, s.lang)})),
+                if (f.isEstimated) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    s.t('token_estimated_badge'),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: AppColors.peachDeep,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
                 if (f.hint != TokenHint.none) ...[
                   const SizedBox(height: 6),
                   Text(s.t('hint_${f.hint.name}'),
@@ -153,6 +218,43 @@ class TokenScreen extends StatelessWidget {
               ],
             ),
           ),
+          if (c.readings.length < 2) ...[
+            const SizedBox(height: 14),
+            Card(
+              color: AppColors.peach.withValues(alpha: 0.35),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.flash_on_rounded, color: AppColors.peachDeep, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            s.t('token_quick_est_title'),
+                            style: const TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      s.t('token_quick_est_desc'),
+                      style: theme.textTheme.bodySmall?.copyWith(color: AppColors.brownSoft),
+                    ),
+                    const SizedBox(height: 10),
+                    FilledButton.tonal(
+                      onPressed: () => _openQuickEstimateDialog(context),
+                      style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
+                      child: Text(s.t('token_quick_est_btn')),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           Row(
             children: [
@@ -191,7 +293,17 @@ class TokenScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Text(s.t('history'), style: theme.textTheme.titleMedium),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(s.t('history'), style: theme.textTheme.titleMedium),
+              if (entries.isNotEmpty)
+                Text(
+                  s.t('swipe_to_delete'),
+                  style: theme.textTheme.bodySmall?.copyWith(color: AppColors.brownSoft),
+                ),
+            ],
+          ),
           const SizedBox(height: 8),
           if (entries.isEmpty) Text(s.t('history_empty')),
           for (final e in entries)

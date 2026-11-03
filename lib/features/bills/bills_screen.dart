@@ -68,50 +68,66 @@ class BillsScreen extends StatelessWidget {
               separatorBuilder: (_, _) => const SizedBox(height: 10),
               itemBuilder: (context, i) {
                 if (i == 0) {
-                  return Card(
-                    elevation: 0,
-                    color: AppColors.peach.withValues(alpha: 0.35),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: AppColors.peachDeep.withValues(alpha: 0.2),
-                      ),
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () => MonthlyExpenseSheet.show(context),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.account_balance_wallet_outlined,
-                                color: AppColors.brown, size: 22),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    s.t('expense_overview'),
-                                    style: theme.textTheme.titleSmall
-                                        ?.copyWith(fontWeight: FontWeight.w700),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Card(
+                        elevation: 0,
+                        color: AppColors.peach.withValues(alpha: 0.35),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(
+                            color: AppColors.peachDeep.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => MonthlyExpenseSheet.show(context),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.account_balance_wallet_outlined,
+                                    color: AppColors.brown, size: 22),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        s.t('expense_overview'),
+                                        style: theme.textTheme.titleSmall
+                                            ?.copyWith(fontWeight: FontWeight.w700),
+                                      ),
+                                      Text(
+                                        s.t('expense_total'),
+                                        style: theme.textTheme.bodySmall?.copyWith(
+                                          color: AppColors.brownSoft,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    s.t('expense_total'),
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: AppColors.brownSoft,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                                const Icon(Icons.arrow_forward_ios_rounded,
+                                    size: 14, color: AppColors.brownSoft),
+                              ],
                             ),
-                            const Icon(Icons.arrow_forward_ios_rounded,
-                                size: 14, color: AppColors.brownSoft),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
+                      if (bills.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              s.t('swipe_to_delete'),
+                              style: theme.textTheme.bodySmall?.copyWith(color: AppColors.brownSoft),
+                            ),
+                          ),
+                        ),
+                    ],
                   );
                 }
                 final b = bills[i - 1];

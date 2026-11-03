@@ -330,6 +330,30 @@ class AuthController extends ChangeNotifier {
     }
   }
 
+  /// Change login password after re-authenticating current password.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _user;
+    if (user == null || user.email == null) {
+      throw const AuthFailure('user-not-found');
+    }
+    if (newPassword.length < 6) {
+      throw const AuthFailure('weak-password');
+    }
+    try {
+      final cred = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+      await user.reauthenticateWithCredential(cred);
+      await user.updatePassword(newPassword);
+    } on FirebaseAuthException catch (e) {
+      throw AuthFailure(e.code);
+    }
+  }
+
   Future<void> deleteAccount({String? password}) async {
     final user = _user;
     if (user == null) return;

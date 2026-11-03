@@ -4,7 +4,7 @@
  * Unified Single Theme: Warm Espresso & Cozy Peach
  */
 
-const APP_VERSION = "0.11.2";
+const APP_VERSION = "0.13.0";
 
 // Mobile Menu Navigation Toggle
 function setupMobileNav() {

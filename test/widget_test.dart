@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty/core/l10n/locale_controller.dart';
+import 'package:nesty/core/modules/module_controller.dart';
+import 'package:nesty/core/notifications/reminder_controller.dart';
 import 'package:nesty/core/theme/app_theme.dart';
 import 'package:nesty/core/utils/photo_service.dart';
 import 'package:nesty/features/auth/auth_controller.dart';
@@ -25,6 +27,7 @@ Widget createTestApp({
   required Widget child,
 }) {
   final locale = LocaleController(prefs);
+  final modules = ModuleController(prefs);
   final supplies = SuppliesController(prefs);
   final routines = RoutinesController(prefs);
   final token = TokenController(prefs);
@@ -33,10 +36,20 @@ Widget createTestApp({
   final bills = BillsController(prefs);
   final auth = AuthController(prefs, firebaseReady: false);
   final profile = ProfileController(prefs, auth: auth);
+  final reminders = ReminderController(
+    prefs,
+    routines: routines,
+    gallon: gallon,
+    token: token,
+    laundry: laundry,
+    bills: bills,
+    locale: locale,
+  );
 
   return MultiProvider(
     providers: [
       ChangeNotifierProvider.value(value: locale),
+      ChangeNotifierProvider.value(value: modules),
       ChangeNotifierProvider.value(value: supplies),
       ChangeNotifierProvider.value(value: routines),
       ChangeNotifierProvider.value(value: token),
@@ -45,6 +58,7 @@ Widget createTestApp({
       ChangeNotifierProvider.value(value: bills),
       ChangeNotifierProvider.value(value: auth),
       ChangeNotifierProvider.value(value: profile),
+      ChangeNotifierProvider.value(value: reminders),
     ],
     child: MaterialApp(
       theme: AppTheme.light,

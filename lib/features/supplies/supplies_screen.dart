@@ -118,9 +118,16 @@ class _CategoryFilter extends StatelessWidget {
 
 // ---------------------------------------------------------------- Stock tab
 
-class _StockList extends StatelessWidget {
+class _StockList extends StatefulWidget {
   const _StockList({required this.items});
   final List<SupplyItem> items;
+
+  @override
+  State<_StockList> createState() => _StockListState();
+}
+
+class _StockListState extends State<_StockList> {
+  bool _showTip = true;
 
   void _openStatusSheet(BuildContext context, SupplyItem item) {
     final controller = context.read<SuppliesController>();
@@ -214,13 +221,44 @@ class _StockList extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.s;
     final controller = context.read<SuppliesController>();
+    final items = widget.items;
+    final showTip = _showTip && items.isNotEmpty;
+    final totalCount = items.length + (showTip ? 1 : 0);
 
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 96),
-      itemCount: items.length,
+      itemCount: totalCount,
       separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
-        final item = items[index];
+        if (showTip && index == 0) {
+          return Card(
+            color: AppColors.peach.withValues(alpha: 0.35),
+            margin: const EdgeInsets.only(bottom: 2),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              child: Row(
+                children: [
+                  const Icon(Icons.tips_and_updates_outlined, color: AppColors.peachDeep, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      s.t('tip_gesture_supplies'),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.brown),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.brownSoft),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => setState(() => _showTip = false),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        final itemIndex = showTip ? index - 1 : index;
+        final item = items[itemIndex];
         final name = item.displayName(s.lang);
 
         return Dismissible(

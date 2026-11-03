@@ -30,10 +30,12 @@ class TokenController extends ChangeNotifier {
   List<MeterReading> _readings = [];
   List<TokenPurchase> _purchases = [];
   double? _tariff;
+  double? _estimatedDailyKwh;
 
   List<MeterReading> get readings => List.unmodifiable(_readings);
   List<TokenPurchase> get purchases => List.unmodifiable(_purchases);
   double? get tariff => _tariff;
+  double? get estimatedDailyKwh => _estimatedDailyKwh;
 
   static TokenState parse(Map<String, dynamic> j) => TokenState(
         ((j['readings'] as List<dynamic>?) ?? [])
@@ -45,18 +47,21 @@ class TokenController extends ChangeNotifier {
             .toList()
           ..sort((a, b) => a.at.compareTo(b.at)),
         (j['tariff'] as num?)?.toDouble(),
+        estimatedDailyKwh: (j['estimatedDailyKwh'] as num?)?.toDouble(),
       );
 
   Map<String, dynamic> toJson() => {
         'readings': _readings.map((e) => e.toJson()).toList(),
         'purchases': _purchases.map((e) => e.toJson()).toList(),
         'tariff': _tariff,
+        'estimatedDailyKwh': _estimatedDailyKwh,
       };
 
   void _apply(TokenState s) {
     _readings = s.readings;
     _purchases = s.purchases;
     _tariff = s.tariff;
+    _estimatedDailyKwh = s.estimatedDailyKwh;
   }
 
   void loadJson(Map<String, dynamic> j) {
@@ -68,6 +73,7 @@ class TokenController extends ChangeNotifier {
     _readings = [];
     _purchases = [];
     _tariff = null;
+    _estimatedDailyKwh = null;
     _changed();
   }
 
@@ -125,6 +131,25 @@ class TokenController extends ChangeNotifier {
     _changed();
   }
 
+  /// Sets an initial consumption estimate before 2+ meter readings are available.
+  /// Standard PLN R-1/900-1300 VA is ~Rp 1,444.70 / kWh.
+  void setColdStartEstimate({
+    required int typicalSpendRp,
+    required int typicalDays,
+    double? tariff,
+  }) {
+    final t = tariff ?? _tariff ?? 1444.70;
+    final totalKwh = typicalSpendRp / (t <= 0 ? 1444.70 : t);
+    final days = typicalDays <= 0 ? 1 : typicalDays;
+    _estimatedDailyKwh = totalKwh / days;
+    _changed();
+  }
+
+  void clearColdStartEstimate() {
+    _estimatedDailyKwh = null;
+    _changed();
+  }
+
   // ----------------------------------------------------------- forecast
 
   double? _ratePerDay() {
@@ -168,6 +193,17 @@ class TokenController extends ChangeNotifier {
     final start = base.kwh + added;
     final rate = _ratePerDay();
     if (rate == null) {
+      if (_estimatedDailyKwh != null && _estimatedDailyKwh! > 0) {
+        final estRate = _estimatedDailyKwh!;
+        final runOut = base.at.add(Duration(minutes: (start / estRate * 1440).round()));
+        final elapsed = DateTime.now().difference(base.at).inMinutes / 1440;
+        return TokenForecast(
+          remainingKwh: max(0.0, start - estRate * elapsed),
+          ratePerDay: estRate,
+          runOutDate: runOut,
+          isEstimated: true,
+        );
+      }
       return TokenForecast(hint: TokenHint.needSecondReading, remainingKwh: start);
     }
     final runOut = base.at.add(Duration(minutes: (start / rate * 1440).round()));

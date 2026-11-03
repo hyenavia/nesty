@@ -32,6 +32,17 @@ class RoutineScreen extends StatelessWidget {
           children: [
             ScreenHeader(title: s.t('tab_routine'), subtitle: s.t('routine_sub')),
             RoutineWeekStrip(tasks: tasks),
+            if (tasks.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 2),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    s.t('swipe_to_delete'),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.brownSoft),
+                  ),
+                ),
+              ),
             Expanded(
               child: ListView.separated(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 96),

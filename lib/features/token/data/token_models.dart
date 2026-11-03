@@ -37,10 +37,11 @@ class TokenPurchase {
 }
 
 class TokenState {
-  const TokenState(this.readings, this.purchases, this.tariff);
+  const TokenState(this.readings, this.purchases, this.tariff, {this.estimatedDailyKwh});
   final List<MeterReading> readings;
   final List<TokenPurchase> purchases;
   final double? tariff; // Rp per kWh, optional
+  final double? estimatedDailyKwh; // initial estimate before 2+ meter readings
 }
 
 enum TokenHint { none, needReading, needKwh, needSecondReading }
@@ -51,11 +52,13 @@ class TokenForecast {
     this.remainingKwh,
     this.ratePerDay,
     this.runOutDate,
+    this.isEstimated = false,
   });
   final TokenHint hint;
   final double? remainingKwh;
   final double? ratePerDay;
   final DateTime? runOutDate;
+  final bool isEstimated;
 
   /// Whole days until the token is predicted to run out (0 = today / overdue).
   int? daysLeft([DateTime? now]) {

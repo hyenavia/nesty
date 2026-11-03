@@ -1,10 +1,19 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Holds the app language. Default: English. Option: Bahasa Indonesia.
+/// Holds the app language.
+/// Defaults to device language if Indonesian ('id'), otherwise English ('en').
 class LocaleController extends ChangeNotifier {
   LocaleController(this._prefs) {
-    _locale = Locale(_prefs.getString(_key) ?? 'en');
+    final saved = _prefs.getString(_key);
+    if (saved != null) {
+      _locale = Locale(saved);
+    } else {
+      final devLang = ui.PlatformDispatcher.instance.locale.languageCode.toLowerCase();
+      _locale = Locale(devLang == 'id' ? 'id' : 'en');
+    }
   }
 
   static const _key = 'locale';

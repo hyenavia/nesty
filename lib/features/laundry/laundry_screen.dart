@@ -225,7 +225,16 @@ class LaundryScreen extends StatelessWidget {
             ),
           if (history.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text(s.t('laundry_history'), style: theme.textTheme.titleMedium),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(s.t('laundry_history'), style: theme.textTheme.titleMedium),
+                Text(
+                  s.t('swipe_to_delete'),
+                  style: theme.textTheme.bodySmall?.copyWith(color: AppColors.brownSoft),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
             for (final o in history)
               Padding(

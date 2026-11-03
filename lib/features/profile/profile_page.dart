@@ -133,6 +133,123 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Future<void> _changePasswordDialog(BuildContext context) async {
+    final s = context.s;
+    final auth = context.read<AuthController>();
+    final currentCtrl = TextEditingController();
+    final newCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    String? errorText;
+    bool obscureCurrent = true;
+    bool obscureNew = true;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(s.t('change_password')),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  s.t('change_password_sub'),
+                  style: Theme.of(ctx).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: currentCtrl,
+                  obscureText: obscureCurrent,
+                  decoration: InputDecoration(
+                    labelText: s.t('current_password'),
+                    prefixIcon: const Icon(Icons.lock_outline_rounded),
+                    suffixIcon: IconButton(
+                      icon: Icon(obscureCurrent ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                      onPressed: () => setDialogState(() => obscureCurrent = !obscureCurrent),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: newCtrl,
+                  obscureText: obscureNew,
+                  decoration: InputDecoration(
+                    labelText: s.t('new_password'),
+                    prefixIcon: const Icon(Icons.lock_reset_rounded),
+                    suffixIcon: IconButton(
+                      icon: Icon(obscureNew ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                      onPressed: () => setDialogState(() => obscureNew = !obscureNew),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: confirmCtrl,
+                  obscureText: obscureNew,
+                  decoration: InputDecoration(
+                    labelText: s.t('confirm_new_password'),
+                    prefixIcon: const Icon(Icons.check_circle_outline_rounded),
+                    errorText: errorText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(s.t('cancel')),
+            ),
+            FilledButton(
+              onPressed: () async {
+                final currentPass = currentCtrl.text;
+                final newPass = newCtrl.text;
+                final confirmPass = confirmCtrl.text;
+
+                if (currentPass.isEmpty) {
+                  setDialogState(() => errorText = s.t('wrong_current_password'));
+                  return;
+                }
+                if (newPass.length < 6) {
+                  setDialogState(() => errorText = s.t('password_too_short'));
+                  return;
+                }
+                if (newPass != confirmPass) {
+                  setDialogState(() => errorText = s.t('passwords_dont_match'));
+                  return;
+                }
+
+                try {
+                  await auth.changePassword(
+                    currentPassword: currentPass,
+                    newPassword: newPass,
+                  );
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  if (mounted) _toast(s.t('password_updated'));
+                } on AuthFailure catch (e) {
+                  setDialogState(() {
+                    if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+                      errorText = s.t('wrong_current_password');
+                    } else if (e.code == 'weak-password') {
+                      errorText = s.t('password_too_short');
+                    } else {
+                      errorText = s.t('err_unknown');
+                    }
+                  });
+                } catch (e) {
+                  setDialogState(() => errorText = '$e');
+                }
+              },
+              child: Text(s.t('save')),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = context.s;
@@ -231,6 +348,17 @@ class _ProfilePageState extends State<ProfilePage> {
                       title: Text(auth.email!),
                       subtitle: Text(s.t('email')),
                     ),
+                  if (auth.signedIn && auth.email != null) ...[
+                    const Divider(height: 1),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.lock_reset_rounded),
+                      title: Text(s.t('change_password'), style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text(s.t('change_password_sub'), style: theme.textTheme.bodySmall),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () => _changePasswordDialog(context),
+                    ),
+                  ],
                   const SizedBox(height: 4),
                   Text(
                     s.t('username_immutable'),

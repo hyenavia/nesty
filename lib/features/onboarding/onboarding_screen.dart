@@ -3,7 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../core/l10n/locale_controller.dart';
+import '../../core/modules/module_controller.dart';
+import '../../core/notifications/reminder_controller.dart';
 import '../../core/theme/app_colors.dart';
+import '../auth/auth_controller.dart';
 import 'onboarding_controller.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -16,7 +19,10 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _pages = PageController();
   int _page = 0;
-  static const _count = 3;
+  static const _count = 4;
+
+  final Set<String> _selectedModules = Set.from(ModuleController.allModules);
+  bool _enableReminders = true;
 
   @override
   void dispose() {
@@ -24,7 +30,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  void _finish() => context.read<OnboardingController>().complete();
+  Future<void> _finish() async {
+    final modules = context.read<ModuleController>();
+    final reminders = context.read<ReminderController>();
+    final auth = context.read<AuthController>();
+    final onboarding = context.read<OnboardingController>();
+
+    await modules.setAll(_selectedModules);
+    if (_enableReminders) {
+      await reminders.setEnabled(true);
+    }
+    await auth.continueAsGuest();
+    if (mounted) {
+      onboarding.complete();
+    }
+  }
 
   void _next() {
     if (_page < _count - 1) {
@@ -62,7 +82,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: Text(
                         code.toUpperCase(),
                         style: TextStyle(
-                          fontWeight:
+                           fontWeight:
                               s.lang == code ? FontWeight.w900 : FontWeight.w500,
                           decoration:
                               s.lang == code ? TextDecoration.underline : null,
@@ -70,11 +90,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                   const Spacer(),
-                  TextButton(
-                    onPressed: _finish,
-                    child: Text(s.t('skip'),
-                        style: const TextStyle(color: AppColors.brownSoft)),
-                  ),
+                  if (!last)
+                    TextButton(
+                      onPressed: _finish,
+                      child: Text(s.t('skip'),
+                          style: const TextStyle(color: AppColors.brownSoft)),
+                    ),
                 ],
               ),
             ),
@@ -83,24 +104,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 controller: _pages,
                 itemCount: _count,
                 onPageChanged: (i) => setState(() => _page = i),
-                itemBuilder: (context, i) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 28),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 280, child: Center(child: art[i])),
-                      const SizedBox(height: 28),
-                      Text(s.t('onb${i + 1}_t'),
-                          style: theme.textTheme.headlineSmall),
-                      const SizedBox(height: 12),
-                      Text(
-                        s.t('onb${i + 1}_b'),
-                        style: theme.textTheme.bodyLarge
-                            ?.copyWith(color: AppColors.brownSoft, height: 1.5),
-                      ),
-                    ],
-                  ),
-                ),
+                itemBuilder: (context, i) {
+                  if (i == 3) {
+                    return _buildSetupPage(context);
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 280, child: Center(child: art[i])),
+                        const SizedBox(height: 28),
+                        Text(s.t('onb${i + 1}_t'),
+                            style: theme.textTheme.headlineSmall),
+                        const SizedBox(height: 12),
+                        Text(
+                          s.t('onb${i + 1}_b'),
+                          style: theme.textTheme.bodyLarge
+                              ?.copyWith(color: AppColors.brownSoft, height: 1.5),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
             Row(
@@ -120,7 +146,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(28, 20, 28, 24),
+              padding: const EdgeInsets.fromLTRB(28, 16, 28, 20),
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
@@ -130,14 +156,90 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         last ? AppColors.safe : AppColors.peachDeep,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: Text(last ? s.t('get_started') : s.t('next'),
-                      style: const TextStyle(fontSize: 17)),
+                  child: Text(last ? s.t('setup_finish_btn') : s.t('next'),
+                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
                 ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSetupPage(BuildContext context) {
+    final s = context.s;
+    final theme = Theme.of(context);
+
+    final modules = [
+      (ModuleController.moduleToken, Icons.bolt_rounded, AppColors.low, s.t('module_token')),
+      (ModuleController.moduleGallon, Icons.water_drop_rounded, AppColors.water, s.t('module_gallon')),
+      (ModuleController.moduleLaundry, Icons.local_laundry_service_rounded, AppColors.lavender, s.t('module_laundry')),
+      (ModuleController.moduleSupplies, Icons.shopping_basket_rounded, AppColors.peachDeep, s.t('module_supplies')),
+      (ModuleController.moduleBills, Icons.receipt_long_rounded, AppColors.peachDeep, s.t('module_bills')),
+    ];
+
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      children: [
+        const SizedBox(height: 8),
+        Text(
+          s.t('setup_title'),
+          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          s.t('setup_desc'),
+          style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.brownSoft),
+        ),
+        const SizedBox(height: 16),
+        for (final m in modules) ...[
+          Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: CheckboxListTile(
+              value: _selectedModules.contains(m.$1),
+              activeColor: AppColors.peachDeep,
+              title: Text(m.$4, style: const TextStyle(fontWeight: FontWeight.w700)),
+              secondary: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: m.$3.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(m.$2, color: AppColors.brown, size: 22),
+              ),
+              onChanged: (val) {
+                setState(() {
+                  if (val == true) {
+                    _selectedModules.add(m.$1);
+                  } else {
+                    _selectedModules.remove(m.$1);
+                  }
+                });
+              },
+            ),
+          ),
+        ],
+        const SizedBox(height: 12),
+        Card(
+          color: AppColors.peach.withValues(alpha: 0.35),
+          child: SwitchListTile(
+            value: _enableReminders,
+            activeTrackColor: AppColors.peachDeep,
+            title: Text(
+              s.t('setup_reminders_title'),
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+            subtitle: Text(
+              s.t('setup_reminders_desc'),
+              style: theme.textTheme.bodySmall?.copyWith(color: AppColors.brownSoft),
+            ),
+            onChanged: (val) => setState(() => _enableReminders = val),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }

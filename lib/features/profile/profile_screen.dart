@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../core/l10n/locale_controller.dart';
+import '../../core/modules/module_controller.dart';
 import '../../core/notifications/reminder_controller.dart';
 import '../../core/sync/backup_service.dart';
 import '../../core/sync/sync_service.dart';
@@ -23,6 +24,65 @@ class ProfileScreen extends StatelessWidget {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  void _openModuleCustomizer(BuildContext context) {
+    final s = context.s;
+    final modules = [
+      (ModuleController.moduleToken, Icons.bolt_rounded, AppColors.low, s.t('module_token')),
+      (ModuleController.moduleGallon, Icons.water_drop_rounded, AppColors.water, s.t('module_gallon')),
+      (ModuleController.moduleLaundry, Icons.local_laundry_service_rounded, AppColors.lavender, s.t('module_laundry')),
+      (ModuleController.moduleSupplies, Icons.shopping_basket_rounded, AppColors.peachDeep, s.t('module_supplies')),
+      (ModuleController.moduleBills, Icons.receipt_long_rounded, AppColors.peachDeep, s.t('module_bills')),
+    ];
+
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) {
+        final controller = ctx.watch<ModuleController>();
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  s.t('customize_modules'),
+                  style: Theme.of(ctx).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  s.t('customize_modules_sub'),
+                  style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(color: AppColors.brownSoft),
+                ),
+                const SizedBox(height: 14),
+                for (final m in modules)
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: controller.isEnabled(m.$1),
+                    activeColor: AppColors.peachDeep,
+                    title: Text(m.$4, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    secondary: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: m.$3.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(m.$2, color: AppColors.brown, size: 20),
+                    ),
+                    onChanged: (val) {
+                      controller.setEnabled(m.$1, val ?? true);
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<bool> _confirm(
@@ -145,6 +205,57 @@ class ProfileScreen extends StatelessWidget {
     } catch (e) {
       if (context.mounted) _toast(context, s.t('err_unknown'));
     }
+  }
+
+  void _showBatteryGuideDialog(BuildContext context) {
+    final s = context.s;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.battery_saver_rounded, color: AppColors.peachDeep),
+            const SizedBox(width: 8),
+            Expanded(child: Text(s.t('battery_guide_title'))),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(s.t('battery_guide_desc')),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(ctx).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('1. ${s.lang == 'id' ? 'Buka Pengaturan HP > Aplikasi > Nesty' : 'Open Settings > Apps > Nesty'}',
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                  const SizedBox(height: 4),
+                  Text('2. ${s.lang == 'id' ? 'Pilih Penghemat Baterai: Tidak ada pembatasan' : 'Set Battery Saver to No Restrictions'}',
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                  const SizedBox(height: 4),
+                  Text('3. ${s.lang == 'id' ? 'Aktifkan Mulai Otomatis (Autostart) jika ada' : 'Allow Autostart / Background activity if present'}',
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(s.t('tip_dismiss')),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -276,6 +387,15 @@ class ProfileScreen extends StatelessWidget {
             const Divider(height: 1),
             ListTile(
               contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.dashboard_customize_outlined),
+              title: Text(s.t('customize_modules'), style: const TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: Text(s.t('customize_modules_sub'), style: theme.textTheme.bodySmall),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => _openModuleCustomizer(context),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.palette_outlined),
               title: Text(s.t('theme'), style: const TextStyle(fontWeight: FontWeight.w700)),
               subtitle: Text(s.t('theme_signature'), style: theme.textTheme.bodySmall),
@@ -324,6 +444,23 @@ class ProfileScreen extends StatelessWidget {
                     }
                   },
                 ),
+              ),
+              const Divider(height: 1),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(s.t('rem_weekly_digest'), style: const TextStyle(fontWeight: FontWeight.w700)),
+                subtitle: Text(s.t('rem_weekly_digest_sub'), style: theme.textTheme.bodySmall),
+                value: reminders.weeklyDigestEnabled,
+                onChanged: (val) => reminders.setWeeklyDigestEnabled(val),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.battery_saver_rounded),
+                title: Text(s.t('battery_guide'), style: const TextStyle(fontWeight: FontWeight.w700)),
+                subtitle: Text(s.t('battery_guide_sub'), style: theme.textTheme.bodySmall),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _showBatteryGuideDialog(context),
               ),
             ],
           ]),
@@ -580,6 +717,17 @@ class ProfileScreen extends StatelessWidget {
               subtitle: Text(s.t('changelog_sub'), style: theme.textTheme.bodySmall),
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: () => showAppChangelogSheet(context),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.privacy_tip_outlined),
+              title: Text(s.t('privacy_policy'), style: const TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: Text(s.t('privacy_policy_sub'), style: theme.textTheme.bodySmall),
+              trailing: const Icon(Icons.open_in_new_rounded, size: 18),
+              onTap: () {
+                UpdateCheckerService.openUrl(UpdateCheckerService.privacyPolicyUrl);
+              },
             ),
             const Divider(height: 1),
             ListTile(

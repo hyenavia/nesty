@@ -63,6 +63,8 @@ class StatusPill extends StatelessWidget {
                 .labelMedium
                 ?.copyWith(fontWeight: FontWeight.w800),
           ),
+          const SizedBox(width: 2),
+          Icon(Icons.arrow_drop_down_rounded, size: 16, color: status.color),
         ],
       ),
     );

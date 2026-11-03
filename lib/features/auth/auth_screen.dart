@@ -98,21 +98,50 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _forgotPassword() async {
-    final id = _register ? _email.text : _identifier.text;
-    if (id.trim().isEmpty) {
-      setState(() {
-        _error = context.tr('Enter your email or username first, then tap "Forgot password?".');
-        _info = null;
-      });
-      return;
-    }
+    final initial = (_register ? _email.text : _identifier.text).trim();
+    final resetCtrl = TextEditingController(text: initial);
+    final target = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.s.t('reset_password')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(context.s.t('reset_password_desc')),
+            const SizedBox(height: 12),
+            TextField(
+              controller: resetCtrl,
+              autofocus: true,
+              decoration: appInput(
+                ctx,
+                label: context.s.t('Email or username'),
+                prefixIcon: const Icon(Icons.mail_outline_rounded),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(context.s.t('cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, resetCtrl.text.trim()),
+            child: Text(context.s.t('send_reset_link')),
+          ),
+        ],
+      ),
+    );
+    if (target == null || target.isEmpty || !mounted) return;
+
     setState(() {
       _busy = true;
       _error = null;
       _info = null;
     });
     try {
-      await context.read<AuthController>().sendPasswordReset(id);
+      await context.read<AuthController>().sendPasswordReset(target);
       if (mounted) {
         setState(() {
           _error = null;
@@ -177,6 +206,13 @@ class _AuthScreenState extends State<AuthScreen> {
               children: [
                 Row(
                   children: [
+                    if (Navigator.canPop(context)) ...[
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_rounded),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     const BrandMark(size: 52),
                     const Spacer(),
                     SegmentedButton<String>(
@@ -294,16 +330,21 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Center(
-                  child: TextButton(
-                    onPressed: _busy
-                        ? null
-                        : () => context.read<AuthController>().continueAsGuest(),
-                    child: Text(
-                      context.tr('Continue without account'),
-                      style: TextStyle(color: muted),
-                    ),
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: _busy
+                      ? null
+                      : () {
+                          context.read<AuthController>().continueAsGuest();
+                          if (Navigator.canPop(context)) Navigator.pop(context);
+                        },
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    side: BorderSide(color: muted.withValues(alpha: 0.3)),
+                  ),
+                  child: Text(
+                    context.tr('Continue without account'),
+                    style: TextStyle(color: theme.colorScheme.onSurface),
                   ),
                 ),
               ],

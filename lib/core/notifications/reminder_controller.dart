@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -30,6 +32,15 @@ class ReminderController extends ChangeNotifier {
     _enabled = _prefs.getBool('notif_enabled') ?? false;
     _hour = _prefs.getInt('notif_hour') ?? 9;
     _minute = _prefs.getInt('notif_minute') ?? 0;
+    _weeklyDigestEnabled = _prefs.getBool('notif_weekly_digest') ?? true;
+
+    _actionSub = NotificationService.instance.onAction.listen((payload) {
+      if (payload.startsWith('routine:')) {
+        final rId = payload.substring('routine:'.length);
+        _routines.markDone(rId);
+      }
+    });
+
     _routines.addListener(reschedule);
     _gallon.addListener(reschedule);
     _token.addListener(reschedule);
@@ -48,11 +59,14 @@ class ReminderController extends ChangeNotifier {
   final LaundryController _laundry;
   final BillsController _bills;
   final LocaleController _locale;
+  StreamSubscription<String>? _actionSub;
   late bool _enabled;
   late int _hour;
   late int _minute;
+  late bool _weeklyDigestEnabled;
 
   bool get enabled => _enabled;
+  bool get weeklyDigestEnabled => _weeklyDigestEnabled;
   TimeOfDay get time => TimeOfDay(hour: _hour, minute: _minute);
 
   Future<void> init() async {
@@ -81,13 +95,25 @@ class ReminderController extends ChangeNotifier {
     await reschedule();
   }
 
+  Future<void> setWeeklyDigestEnabled(bool value) async {
+    _weeklyDigestEnabled = value;
+    await _prefs.setBool('notif_weekly_digest', value);
+    notifyListeners();
+    await reschedule();
+  }
+
   List<ReminderItem> _build() {
     final lang = _locale.locale.languageCode;
     final s = AppStrings(Locale(lang));
     final items = <ReminderItem>[
       for (final t in _routines.items)
-        ReminderItem('routine_${t.id}', t.dueDate,
-            s.t('notif_routine', {'name': t.displayName(lang)})),
+        ReminderItem(
+          'routine_${t.id}',
+          t.dueDate,
+          s.t('notif_routine', {'name': t.displayName(lang)}),
+          actionLabel: s.t('notif_action_done'),
+          payload: 'routine:${t.id}',
+        ),
     ];
     final g = _gallon.reminderDate;
     if (g != null) items.add(ReminderItem('gallon', g, s.t('notif_gallon')));
@@ -114,6 +140,18 @@ class ReminderController extends ChangeNotifier {
         s.t('notif_bill', {'name': b.name}),
       ));
     }
+    if (_weeklyDigestEnabled) {
+      final now = DateTime.now();
+      final daysUntilSunday = (DateTime.sunday - now.weekday + 7) % 7;
+      final nextSunday = daysUntilSunday == 0 && (now.hour > _hour || (now.hour == _hour && now.minute >= _minute))
+          ? now.add(const Duration(days: 7))
+          : now.add(Duration(days: daysUntilSunday));
+      items.add(ReminderItem(
+        'weekly_digest',
+        DateTime(nextSunday.year, nextSunday.month, nextSunday.day),
+        s.t('notif_weekly_digest'),
+      ));
+    }
     return items;
   }
 
@@ -123,5 +161,11 @@ class ReminderController extends ChangeNotifier {
       return;
     }
     await NotificationService.instance.schedule(_build(), hour: _hour, minute: _minute);
+  }
+
+  @override
+  void dispose() {
+    _actionSub?.cancel();
+    super.dispose();
   }
 }
