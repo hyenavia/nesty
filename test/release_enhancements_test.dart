@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty/core/l10n/locale_controller.dart';
 import 'package:nesty/core/notifications/reminder_controller.dart';
 import 'package:nesty/core/theme/app_colors.dart';
+import 'package:nesty/features/auth/auth_controller.dart';
 import 'package:nesty/features/bills/data/bills_controller.dart';
 import 'package:nesty/features/gallon/data/gallon_controller.dart';
 import 'package:nesty/features/laundry/data/laundry_controller.dart';
@@ -53,6 +54,38 @@ void main() {
 
       await rem.setWeeklyDigestEnabled(true);
       expect(rem.weeklyDigestEnabled, isTrue);
+    });
+  });
+
+  group('AuthController & Account Lifecycle Tests', () {
+    test('username and email validation behave accurately', () {
+      expect(AuthController.isValidUsername('budi'), isTrue);
+      expect(AuthController.isValidUsername('budi_123'), isTrue);
+      expect(AuthController.isValidUsername('budi.nest'), isTrue);
+      expect(AuthController.isValidUsername('ab'), isFalse); // too short (<3)
+      expect(AuthController.isValidUsername('a' * 21), isFalse); // too long (>20)
+      expect(AuthController.isValidUsername('budi@123'), isFalse); // invalid character
+
+      expect(AuthController.isValidEmail('user@test.com'), isTrue);
+      expect(AuthController.isValidEmail('user.name@domain.co.id'), isTrue);
+      expect(AuthController.isValidEmail('invalid-email'), isFalse);
+      expect(AuthController.isValidEmail('@domain.com'), isFalse);
+    });
+
+    test('AuthController initializes with mock preferences in guest mode', () async {
+      SharedPreferences.setMockInitialValues({
+        'cached_username': 'cozy_nester',
+        'guest_mode': true,
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final auth = AuthController(prefs, firebaseReady: false);
+
+      expect(auth.isGuest, isTrue);
+      expect(auth.username, 'cozy_nester');
+      expect(auth.needsAuth, isFalse);
+
+      await auth.exitGuest();
+      expect(auth.isGuest, isFalse);
     });
   });
 }

@@ -178,7 +178,25 @@ class AuthController extends ChangeNotifier {
       throw const AuthFailure('weak-password');
     }
 
-    // Create Firebase Auth account first
+    final uDoc = _usernameDoc(name);
+
+    // Preliminary check: if username already exists and belongs to a different email,
+    // reject immediately BEFORE creating the Auth user, avoiding orphan rollbacks.
+    try {
+      final preSnap = await uDoc.get().timeout(const Duration(seconds: 8));
+      if (preSnap.exists) {
+        final existingEmail = (preSnap.data()?['email'] as String?)?.trim().toLowerCase();
+        if (existingEmail != null && existingEmail.isNotEmpty && existingEmail != mail.toLowerCase()) {
+          throw const AuthFailure('username-taken');
+        }
+      }
+    } on AuthFailure {
+      rethrow;
+    } catch (e) {
+      debugPrint('[AuthController] Preliminary username check note: $e');
+    }
+
+    // Create Firebase Auth account
     final UserCredential cred;
     try {
       cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -191,20 +209,27 @@ class AuthController extends ChangeNotifier {
     final user = cred.user!;
     final uid = user.uid;
 
-    // Atomically reserve username via transaction to prevent race conditions
-    final uDoc = _usernameDoc(name);
+    // Atomically reserve/reclaim username via transaction
     try {
       await FirebaseFirestore.instance.runTransaction((tx) async {
         final snap = await tx.get(uDoc);
         if (snap.exists) {
-          throw const AuthFailure('username-taken');
+          final existingEmail = (snap.data()?['email'] as String?)?.trim().toLowerCase();
+          final existingUid = snap.data()?['uid'] as String?;
+          final isSameEmail = existingEmail != null && existingEmail == mail.toLowerCase();
+          final isSameUid = existingUid != null && existingUid == uid;
+          if (!isSameEmail && !isSameUid) {
+            throw const AuthFailure('username-taken');
+          }
         }
+        final createdAt = snap.data()?['createdAt'] ?? FieldValue.serverTimestamp();
         tx.set(uDoc, {
           'uid': uid,
           'email': mail,
           'username': name,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+          'createdAt': createdAt,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
         tx.set(
           FirebaseFirestore.instance.collection('users').doc(uid),
           {'username': name, 'email': mail},
@@ -213,7 +238,7 @@ class AuthController extends ChangeNotifier {
       }).timeout(const Duration(seconds: 10));
       await user.updateDisplayName(name);
     } on AuthFailure {
-      // Username taken — delete the just-created auth account
+      // Username taken by someone else — delete the just-created auth account
       try { await user.delete(); } catch (_) {}
       rethrow;
     } catch (e) {
@@ -280,16 +305,21 @@ class AuthController extends ChangeNotifier {
       final snap = await tx.get(newDoc);
       if (snap.exists) {
         final existingUid = snap.data()?['uid'];
-        if (existingUid != user.uid) {
+        final existingEmail = (snap.data()?['email'] as String?)?.toLowerCase();
+        final isSameUser = existingUid == user.uid ||
+            (existingEmail != null && existingEmail == user.email?.toLowerCase());
+        if (!isSameUser) {
           throw const AuthFailure('username-taken');
         }
       }
+      final createdAt = snap.data()?['createdAt'] ?? FieldValue.serverTimestamp();
       tx.set(newDoc, {
         'uid': user.uid,
         'email': user.email ?? '',
         'username': cleanNew,
+        'createdAt': createdAt,
         'updatedAt': FieldValue.serverTimestamp(),
-      });
+      }, SetOptions(merge: true));
       tx.set(
         FirebaseFirestore.instance.collection('users').doc(user.uid),
         {'username': cleanNew},
@@ -358,35 +388,126 @@ class AuthController extends ChangeNotifier {
     final user = _user;
     if (user == null) return;
     final uid = user.uid;
-    final uName = username;
+    final userEmail = user.email;
 
-    // Re-authenticate if password provided
-    if (password != null && password.isNotEmpty && user.email != null) {
-      final cred = EmailAuthProvider.credential(
-        email: user.email!,
-        password: password,
-      );
-      await user.reauthenticateWithCredential(cred);
-    }
-
-    // Wipe username reservation
-    if (uName != null && uName.isNotEmpty) {
+    // 1. Re-authenticate first to guarantee credentials are valid
+    // before performing any irreversible deletions.
+    if (password != null && password.isNotEmpty && userEmail != null) {
       try {
-        await _usernameDoc(uName).delete().timeout(const Duration(seconds: 10));
-      } catch (e) {
-        debugPrint('[AuthController] Username cleanup on delete: $e');
+        final cred = EmailAuthProvider.credential(
+          email: userEmail,
+          password: password,
+        );
+        await user.reauthenticateWithCredential(cred);
+      } on FirebaseAuthException catch (e) {
+        throw AuthFailure(e.code);
       }
     }
 
-    // Wipe user cloud document
+    // 2. Discover ALL candidate usernames associated with this account.
+    final candidateNames = <String>{};
+    if (username != null && username!.trim().isNotEmpty) {
+      candidateNames.add(username!.trim());
+    }
+    if (_cachedUsername != null && _cachedUsername!.trim().isNotEmpty) {
+      candidateNames.add(_cachedUsername!.trim());
+    }
+    if (user.displayName != null && user.displayName!.trim().isNotEmpty) {
+      candidateNames.add(user.displayName!.trim());
+    }
+
+    // Read users/{uid} document to find any recorded username
     try {
-      await FirebaseFirestore.instance.collection('users').doc(uid).delete().timeout(const Duration(seconds: 10));
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get()
+          .timeout(const Duration(seconds: 8));
+      final recordedName = userDoc.data()?['username'] as String?;
+      if (recordedName != null && recordedName.trim().isNotEmpty) {
+        candidateNames.add(recordedName.trim());
+      }
+    } catch (e) {
+      debugPrint('[AuthController] Delete account - user doc lookup note: $e');
+    }
+
+    // 3. Query the 'usernames' collection for any entries matching this UID
+    try {
+      final uidDocs = await FirebaseFirestore.instance
+          .collection('usernames')
+          .where('uid', isEqualTo: uid)
+          .get()
+          .timeout(const Duration(seconds: 8));
+      for (final doc in uidDocs.docs) {
+        try {
+          await doc.reference.delete().timeout(const Duration(seconds: 8));
+        } catch (e) {
+          debugPrint('[AuthController] UID username doc delete note: $e');
+        }
+      }
+    } catch (e) {
+      debugPrint('[AuthController] Query usernames by UID note: $e');
+    }
+
+    // Also delete any candidate name docs directly
+    for (final name in candidateNames) {
+      try {
+        await _usernameDoc(name).delete().timeout(const Duration(seconds: 8));
+      } catch (e) {
+        debugPrint('[AuthController] Candidate username cleanup note ($name): $e');
+      }
+    }
+
+    // Query usernames collection matching user's email if available
+    if (userEmail != null && userEmail.isNotEmpty) {
+      try {
+        final emailDocs = await FirebaseFirestore.instance
+            .collection('usernames')
+            .where('email', isEqualTo: userEmail)
+            .get()
+            .timeout(const Duration(seconds: 8));
+        for (final doc in emailDocs.docs) {
+          try {
+            await doc.reference.delete().timeout(const Duration(seconds: 8));
+          } catch (e) {
+            debugPrint('[AuthController] Email username doc delete note: $e');
+          }
+        }
+      } catch (e) {
+        debugPrint('[AuthController] Query usernames by email note: $e');
+      }
+    }
+
+    // 4. Wipe user meta profile subcollection and root document
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('meta')
+          .doc('profile')
+          .delete()
+          .timeout(const Duration(seconds: 8));
+    } catch (e) {
+      debugPrint('[AuthController] User meta cleanup note: $e');
+    }
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .delete()
+          .timeout(const Duration(seconds: 8));
     } catch (e) {
       debugPrint('[AuthController] User doc cleanup on delete: $e');
     }
 
-    // Delete user from Firebase Auth
-    await user.delete();
+    // 5. Delete user from Firebase Auth
+    try {
+      await user.delete();
+    } on FirebaseAuthException catch (e) {
+      throw AuthFailure(e.code);
+    }
+
     _cachedUsername = null;
     await _prefs.remove(_usernameKey);
     await _setGuest(true);

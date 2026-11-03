@@ -162,46 +162,69 @@ class ProfileScreen extends StatelessWidget {
     if (!ok || !context.mounted) return;
 
     final passCtrl = TextEditingController();
+    String? passError;
     final passOk = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(s.t('delete_account')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(s.t('reauth_password')),
-            const SizedBox(height: 12),
-            TextField(
-              controller: passCtrl,
-              obscureText: true,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: s.t('password'),
-                prefixIcon: const Icon(Icons.lock_outline_rounded),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(s.t('delete_account')),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(s.t('reauth_password')),
+              const SizedBox(height: 12),
+              TextField(
+                controller: passCtrl,
+                obscureText: true,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: s.t('password'),
+                  errorText: passError,
+                  prefixIcon: const Icon(Icons.lock_outline_rounded),
+                ),
+                onChanged: (_) {
+                  if (passError != null) setDialogState(() => passError = null);
+                },
               ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(s.t('cancel')),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.out),
+              onPressed: () {
+                if (passCtrl.text.trim().isEmpty) {
+                  setDialogState(() => passError = s.t('err_password_required'));
+                  return;
+                }
+                Navigator.pop(ctx, true);
+              },
+              child: Text(s.t('delete_account')),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(s.t('cancel')),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.out),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(s.t('delete_account')),
-          ),
-        ],
       ),
     );
 
     if (passOk != true || !context.mounted) return;
 
     try {
-      await context.read<AuthController>().deleteAccount(password: passCtrl.text);
+      await context.read<AuthController>().deleteAccount(password: passCtrl.text.trim());
       if (context.mounted) _toast(context, s.t('delete_account_ok'));
+    } on AuthFailure catch (e) {
+      if (context.mounted) {
+        if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+          _toast(context, s.t('wrong_current_password'));
+        } else if (e.code == 'requires-recent-login') {
+          _toast(context, s.t('err_requires_recent_login'));
+        } else {
+          _toast(context, s.t('err_unknown'));
+        }
+      }
     } catch (e) {
       if (context.mounted) _toast(context, s.t('err_unknown'));
     }

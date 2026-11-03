@@ -4,6 +4,26 @@ All notable changes to the **Nesty** - Little Things, Taken Care Of project will
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.1] - 2026-11-03
+
+### Fixed
+- **Account Re-Registration & Username Reclamation (`AuthController.signUp`)**:
+  - Fixed an issue where deleting an account and attempting to re-register with the same email and username caused a false `username-taken` conflict followed by auth user rollback.
+  - Added preliminary username availability pre-checks prior to creating Firebase Auth accounts, preventing orphaned auth records.
+  - Allowed users to seamlessly reclaim and update their previously owned username reservation when registering with the identical verified email address.
+- **Thorough Cloud Data Deletion (`AuthController.deleteAccount`)**:
+  - Re-architected account deletion to systematically discover and purge all username reservations mapped to the user's `uid`, email, and cached displayName in Firestore prior to Firebase Auth user deletion.
+  - Replaced generic error suppression with explicit re-authentication credential checks and error reporting.
+  - Added deletion cleanup for subcollections under `users/{uid}/meta/profile`.
+- **Delete Account Modal Validation & Feedback (`ProfileScreen`)**:
+  - Added inline password validation in the deletion confirmation modal, preventing empty submissions from triggering unhandled `requires-recent-login` errors.
+  - Added clear localized feedback for incorrect password and session re-login requirements.
+- **Hardened Cloud Firestore Security Rules (`firestore.rules`)**:
+  - Updated `/usernames/{name}` update and delete rules to allow users with matching token email (`request.auth.token.email`) to reclaim or delete username mappings across re-registration lifecycles.
+  - Added strict payload domain schema validation (`isValidUsernameDoc`).
+
+---
+
 ## [0.13.0] - 2026-11-03
 
 ### Added
