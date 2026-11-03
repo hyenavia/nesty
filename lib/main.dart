@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,6 +27,16 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
   await initializeDateFormatting();
   await PhotoService.init();
+
+  try {
+    final packageInfo = await PackageInfo.fromPlatform();
+    UpdateCheckerService.initFromPackage(
+      version: packageInfo.version,
+      buildNumber: packageInfo.buildNumber,
+    );
+  } catch (e) {
+    debugPrint('PackageInfo initialization error: $e');
+  }
 
   // If Firebase is not configured yet, the app still works locally.
   var firebaseReady = false;

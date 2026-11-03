@@ -36,10 +36,23 @@ class ReleaseEntry {
 class AppChangelog {
   static const List<ReleaseEntry> releases = [
     ReleaseEntry(
-      version: '0.11.1',
+      version: '0.11.2',
       dateEn: 'November 3, 2026',
       dateId: '3 November 2026',
       isCurrent: true,
+      changes: [
+        ChangeItem(
+          type: ChangeType.fixed,
+          textEn: 'Dynamic Versioning: Connected runtime version resolution via package_info_plus, eliminating stale version indicators and false-positive update alerts.',
+          textId: 'Deteksi Versi Dinamis: Menghubungkan resolusi versi saat runtime via package_info_plus, menghilangkan tampilan versi usang dan peringatan pembaruan keliru.',
+        ),
+      ],
+    ),
+    ReleaseEntry(
+      version: '0.11.1',
+      dateEn: 'November 3, 2026',
+      dateId: '3 November 2026',
+      isCurrent: false,
       changes: [
         ChangeItem(
           type: ChangeType.added,

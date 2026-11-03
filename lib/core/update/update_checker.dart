@@ -71,8 +71,18 @@ class UpdateController extends ChangeNotifier {
 }
 
 class UpdateCheckerService {
-  /// Versi aplikasi saat ini. Selalu disinkronkan dengan pubspec.yaml.
-  static const currentVersion = '0.10.0';
+  /// Versi aplikasi saat ini. Diinisialisasi dinamis dari PackageInfo atau fallback ke versi rilis.
+  static String currentVersion = '0.11.2';
+  static String buildNumber = '15';
+
+  static void initFromPackage({required String version, required String buildNumber}) {
+    if (version.trim().isNotEmpty) {
+      currentVersion = version.trim();
+    }
+    if (buildNumber.trim().isNotEmpty) {
+      UpdateCheckerService.buildNumber = buildNumber.trim();
+    }
+  }
 
   static const String _latestReleaseApi =
       'https://api.github.com/repos/hyenavia/nesty/releases/latest';

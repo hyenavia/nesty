@@ -615,9 +615,9 @@ class ProfileScreen extends StatelessWidget {
                   color: AppColors.peach.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: const Text(
-                  'v0.7.2 (Build 8)',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: AppColors.brown),
+                child: Text(
+                  'v${UpdateCheckerService.currentVersion} (Build ${UpdateCheckerService.buildNumber})',
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: AppColors.brown),
                 ),
               ),
             ),
